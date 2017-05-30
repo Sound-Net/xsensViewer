@@ -37,6 +37,7 @@ public class SensorView extends BorderPane {
 		
 		VBox leftHolder = new VBox(); 
 		leftHolder.setSpacing(5);
+		leftHolder.setPrefWidth(250);
 		
 		//leftHolder.getStylesheets().add(darkStyle);
 		leftHolder.getChildren().add(serialCommPane=new SerialCommPane());
@@ -78,9 +79,14 @@ public class SensorView extends BorderPane {
 			sensorControl.stopSerial();
 		}); 
 		
-		buttonHolder.getChildren().addAll(new Label("Port Settings"), startButton, stopButton); 
+		buttonHolder.getChildren().addAll( 
+				startButton, stopButton); 
+		
+		
+		VBox vBox = new VBox(); 
+		vBox.getChildren().addAll(new Label("Connect: "), buttonHolder);
 				
-		return buttonHolder; 
+		return vBox; 
 		
 	}
 	
