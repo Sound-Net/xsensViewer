@@ -11,25 +11,30 @@ import main.SensorData;
  */
 public class SerialMessageParser {
 
-	/**
-	 * Serial data is eular angles
-	 */
-	public final static int EULAR_ANGLES=0; 
-
-	/**
-	 * Serial data is quaternion
-	 */
-	public final static int QUATERNION=1; 
-
-	/*
-	 * Data incoming in MTdATA FORMAT;
-	 */
-	public final static int MTDATA=2;
+//	/**
+//	 * Serial data is eular angles
+//	 */
+//	public final static int EULAR_ANGLES=0; 
+//
+//	/**
+//	 * Serial data is quaternion
+//	 */
+//	public final static int QUATERNION=1; 
+//
+//	/*
+//	 * Data incoming in MTdATA FORMAT;
+//	 */
+//	public final static int MTDATA=2;
+	
+	
+	public enum DataTypes {
+		EULAR_ANGLES, QUATERNION, MTDATA
+	}
 
 	/**
 	 * The current incomming data type
 	 */
-	public int messageFlag=EULAR_ANGLES; 
+	public DataTypes messageFlag=DataTypes.EULAR_ANGLES; 
 
 	private SensorControl sensorControl;
 
@@ -74,7 +79,7 @@ public class SerialMessageParser {
 	 * Parse quaternion/ 
 	 */
 	public void parseQuaternion(String dataLine){
-		double[] angles=doubleArrayParser(dataLine, 3);
+		double[] angles=doubleArrayParser(dataLine, 4);
 		if (angles!=null){
 			SensorData sensorComms = new SensorData(angles); 
 			newMessage(sensorComms);
@@ -106,6 +111,23 @@ public class SerialMessageParser {
 			sensorControl.newMessage(sensorComms);
 		});
 	}
+	
+	/**
+	 * Gte the message flag
+	 * @return the messageFlag
+	 */
+	public DataTypes getMessageFlag() {
+		return messageFlag;
+	}
+
+	/**
+	 * Set the message flag
+	 * @param messageFlag the messageFlag to set
+	 */
+	public void setMessageFlag(DataTypes messageFlag) {
+		this.messageFlag = messageFlag;
+	}
+	
 
 
 

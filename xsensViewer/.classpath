@@ -10,5 +10,6 @@
 	<classpathentry kind="lib" path="src/jars/jimObjModelImporterJFX.jar"/>
 	<classpathentry kind="lib" path="src/jars/jimStlMeshImporterJFX.jar"/>
 	<classpathentry kind="lib" path="src/jars/jimX3dModelImporterJFX.jar"/>
+	<classpathentry kind="lib" path="src/jars/commons-math3-3.6.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
