@@ -129,6 +129,7 @@ public class SensorControl extends SensorMain {
 					String inputLine=null;
 					if (serialComm.getBufferredInput().ready()) {
 						inputLine = serialComm.getBufferredInput().readLine();
+						System.out.println("Incomming data: " + inputLine);
 						serialMessageParser.parseLine(inputLine); 
 					}
 
@@ -165,6 +166,15 @@ public class SensorControl extends SensorMain {
         }
 
     }
+
+    
+    /**
+     * Get the message parser. This converts serial text to data values. 
+     * @return the message parser
+     */
+	public SerialMessageParser getSerialParser() {
+		return serialMessageParser; 
+	}
 
 
 

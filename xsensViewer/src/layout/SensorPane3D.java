@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.Comparator;
 
 import com.interactivemesh.jfx.importer.stl.StlMeshImporter;
-
+import comms.SerialUtils;
 import javafx.event.EventHandler;
 import javafx.geometry.Point3D;
 import javafx.scene.DepthTest;
@@ -37,7 +37,7 @@ import main.SensorData;
  */
 public class SensorPane3D extends BorderPane {
 
-	private static final String MESH_FILENAME = "C:\\Users\\jamie\\git\\xsensViewer\\xsensViewer\\src\\resources\\board frame.stl";
+	private static final String MESH_FILENAME = "src\\resources\\SensorPacakageR4.stl";
 
 	private static final double MODEL_SCALE_FACTOR = 10;
 
@@ -87,10 +87,19 @@ public class SensorPane3D extends BorderPane {
 		
 		if (sensormessage.eularAngles!=null){
 			//matrixRotateNode(sensorGroup,Math.toRadians(sensormessage.eularAngles[0]), Math.toRadians(sensormessage.eularAngles[1]), Math.toRadians(sensormessage.eularAngles[2]));
-			matrixRotateNode(sensorGroup,sensormessage.eularAngles[0], sensormessage.eularAngles[1], sensormessage.eularAngles[2]);
-
+			if (sensormessage.eularAngles[0]!=0 && sensormessage.eularAngles[1]!=0 && sensormessage.eularAngles[2]!=0){
+				//get rid of spurious values
+				matrixRotateNode(sensorGroup,sensormessage.eularAngles[0], sensormessage.eularAngles[1], sensormessage.eularAngles[2]);
+			}
+		}
+		else if (sensormessage.quaternion!=null){
+			double[] angles = SerialUtils.quat2Eul(sensormessage.quaternion);
+			if (sensormessage.quaternion[0]!=0 && sensormessage.quaternion[1]!=0 && sensormessage.quaternion[2]!=0 && sensormessage.quaternion[3]!=0){
+				matrixRotateNode(sensorGroup,Math.toDegrees(angles[2]), Math.toDegrees(angles[1]), Math.toDegrees(angles[0]));
+			}
 		}
 	}
+
 	
 	/**
 	 * Rotate by Euler angles 
@@ -124,22 +133,40 @@ public class SensorPane3D extends BorderPane {
 		
 	    	Rotate headingR = null, rollR = null, pitchR =null;
 	    	
-	    	 n.getTransforms().clear(); 
+	    	n.getTransforms().clear(); 
 	    
+	    	 //has to be in this order
 	    	headingR= new Rotate(); 
 	    	headingR.setAxis(new Point3D(0,1,0));
-	    	headingR.setAngle(yaw);
+	    	headingR.setAngle(-yaw);
 		    n.getTransforms().add(headingR);
-
-		    rollR= new Rotate(); 
-		    rollR.setAxis(new Point3D(0,0,1));
-		    rollR.setAngle(roll);
-		    n.getTransforms().add(rollR);
-
+		    
 		    pitchR= new Rotate(); 
 		    pitchR.setAxis(new Point3D(1,0,0));
 		    pitchR.setAngle(pitch);
 		    n.getTransforms().add(pitchR);
+
+		    rollR= new Rotate(); 
+		    rollR.setAxis(new Point3D(0,0,1));
+		    rollR.setAngle(180-roll);
+		    n.getTransforms().add(rollR);
+	    	
+//	    	 //has to be in this order
+//	    	headingR= new Rotate(); 
+//	    	headingR.setAxis(new Point3D(0,1,0));
+//	    	headingR.setAngle(yaw);
+//		    n.getTransforms().add(headingR);
+//		    
+//		    pitchR= new Rotate(); 
+//		    pitchR.setAxis(new Point3D(1,0,0));
+//		    pitchR.setAngle(pitch);
+//		    n.getTransforms().add(pitchR);
+//
+//		    rollR= new Rotate(); 
+//		    rollR.setAxis(new Point3D(0,0,1));
+//		    rollR.setAngle(roll);
+//		    n.getTransforms().add(rollR);
+
 	}
 	
 	/**
@@ -158,7 +185,7 @@ public class SensorPane3D extends BorderPane {
 		camera.getTransforms().addAll (
 				rotateY=new Rotate(-45, Rotate.Y_AXIS),
 				rotateX=new Rotate(-45, Rotate.X_AXIS),
-				translate=new Translate(0, 0, -1500));
+				translate=new Translate(0, 0, -2500));
 
 		//create main 3D group 
 		root3D=new Group();
@@ -222,18 +249,20 @@ public class SensorPane3D extends BorderPane {
 	private MeshView[] createSensor() {
 
 		MeshView[] meshViews = loadMeshViews();
-
+		
 		for (int i = 0; i < meshViews.length; i++) {
+			meshViews[i].setRotate(90);
 			meshViews[i].setScaleX(MODEL_SCALE_FACTOR);
 			meshViews[i].setScaleY(MODEL_SCALE_FACTOR);
 			meshViews[i].setScaleZ(MODEL_SCALE_FACTOR);
+
 
 			PhongMaterial sample = new PhongMaterial(jewelColor);
 			sample.setSpecularColor(lightColor);
 			sample.setSpecularPower(16);
 			meshViews[i].setMaterial(sample);
 		}
-
+		
 		return meshViews;
 	}
 
