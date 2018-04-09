@@ -4,7 +4,6 @@ import comms.SerialMessageParser.DataTypes;
 import comms.SerialUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -43,8 +42,17 @@ public class SensorView extends BorderPane {
 
 	private Label pitchLabel;
 
-	private Label rollLabel; 
+	private Label rollLabel;
+
+	private Label depthlabel;
+
+	private Label tempLabel;
+
+	private Label RGBLabel;
+
+	private Label batLabel; 
 	
+	final String DEGREE  = "\u00b0";
 
 	public SensorView(SensorControl sensorControl){
 		this.sensorControl=sensorControl; 
@@ -59,18 +67,15 @@ public class SensorView extends BorderPane {
 		
 		leftHolder.getChildren().addAll(createConnectPane()); 
 		
-		leftHolder.getChildren().addAll(createDataTypePane()); 
+		//leftHolder.getChildren().addAll(createDataTypePane()); 
 
 		
 		leftHolder.getChildren().addAll(createDataPane()); 
 		
-		
 		sensorControl.addSensorMessageListener((sensormessage)->{
-			
 			setEulerData(sensormessage);
 			setDataLabelData(sensormessage);
 			sensorPane3D.setOrientationData(sensormessage); 
-			
 		});
 		
 		StackPane holderPane= new StackPane(); 
@@ -167,8 +172,20 @@ public class SensorView extends BorderPane {
 
 		VBox dataPane= new VBox(); 
 		
-		dataPane.getChildren().add(new Label("Data")); 
+		dataPane.getChildren().add(new Label("Orientation: ")); 
 		dataPane.getChildren().add(dataLabel= new Label("-")); 
+		
+		dataPane.getChildren().add(new Label("Pressure: ")); 
+		dataPane.getChildren().add(depthlabel= new Label("-")); 
+		
+		dataPane.getChildren().add(new Label("Temperature: ")); 
+		dataPane.getChildren().add(tempLabel= new Label("-")); 
+		
+		dataPane.getChildren().add(new Label("RGB: ")); 
+		dataPane.getChildren().add(RGBLabel= new Label("-")); 
+		
+		dataPane.getChildren().add(new Label("Battery: ")); 
+		dataPane.getChildren().add(batLabel= new Label("-")); 
 		
 		return dataPane; 
 
@@ -177,7 +194,7 @@ public class SensorView extends BorderPane {
 	
 	/**
 	 * Set the label showing euler data on the 3D display
-	 * @param sensormessage 
+	 * @param sensormessage - the sensor message containing the data. 
 	 */
 	public void setEulerData(SensorData sensormessage){
 	
@@ -195,17 +212,15 @@ public class SensorView extends BorderPane {
 			eularAngles=angles;
 
 		}
-		
 		yawLabel.setText( String.format("%.2f", eularAngles[0]));
 		pitchLabel.setText( String.format("%.2f", eularAngles[1]));
 		rollLabel.setText( String.format("%.2f", eularAngles[2]));
-		
 	}
 	
 	
 	/**
-	 * Set the label incomming sensor data
-	 * @param sensormessage 
+	 * Set the label incoming sensor data
+	 * @param sensormessage - the sensor message containing the data. 
 	 */
 	public void setDataLabelData(SensorData sensormessage){
 	
@@ -215,8 +230,25 @@ public class SensorView extends BorderPane {
 					" Yaw: "+String.format("%.2f",sensormessage.eularAngles[2]));
 		}
 		else if (sensormessage.quaternion!=null){
-			dataLabel.setText("a " + String.format("%.4f", sensormessage.quaternion[0]) + " b: "+String.format("%.4f", sensormessage.quaternion[1]) + " c: "
+			dataLabel.setText("a: " + String.format("%.4f", sensormessage.quaternion[0]) + " b: "+String.format("%.4f", sensormessage.quaternion[1]) + " c: "
 					+String.format("%.4f", sensormessage.quaternion[2])+ " d: "+String.format("%.4f", sensormessage.quaternion[2]));
+		}
+		
+		if (sensormessage.temperature!=null) {
+			tempLabel.setText(String.format("%.2f ", sensormessage.temperature) + DEGREE + "C"); 
+		}
+		
+		if (sensormessage.pressure!=null) {
+			tempLabel.setText(String.format("%.3f ", sensormessage.pressure) + "mbar"); 
+		}
+		
+		if (sensormessage.rgb!=null) {
+			RGBLabel.setText("red: " + String.format("%.1f", sensormessage.rgb[0]) + " blue: "+String.format("%.1f", sensormessage.rgb[1])  + " green: "
+					+String.format("%.1f", sensormessage.rgb[2]));
+		}
+		
+		if (sensormessage.batteryLevel!=null) {
+			batLabel.setText(String.format("%.2f ", sensormessage.pressure) + "%"); 
 		}
 		
 	}

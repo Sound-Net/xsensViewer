@@ -129,7 +129,7 @@ public class SensorControl extends SensorMain {
 					String inputLine=null;
 					if (serialComm.getBufferredInput().ready()) {
 						inputLine = serialComm.getBufferredInput().readLine();
-						System.out.println("Incomming data: " + inputLine);
+						//System.out.println("Incomming data: " + inputLine);
 						serialMessageParser.parseLine(inputLine); 
 					}
 
