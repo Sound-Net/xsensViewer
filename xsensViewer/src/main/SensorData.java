@@ -10,11 +10,14 @@ import comms.SerialMessageParser.DataTypes;
  */
 public class SensorData {
 	
+	public DataTypes flag;
+
 	/**
 	 * Constructor for angles. 
 	 * @param angles - angles. lengfth of 3 is euler angles in degrres. Length of 4 is a quaternion. 
 	 */
 	public SensorData(double[] data, DataTypes flag) {
+		this.flag=flag; 
 		if (flag==DataTypes.EULAR_ANGLES) eularAngles=data; 
 		if (flag==DataTypes.QUATERNION) quaternion=data; 
 		if (flag==DataTypes.RGBDATA) rgb=data; 
@@ -22,7 +25,7 @@ public class SensorData {
 			this.pressure=data[0];
 			this.temperature=data[1]; 
 		}
-		if (flag==DataTypes.BATTERYDATA) rgb=data; 
+		if (flag==DataTypes.BATTERYDATA) batteryLevel=data[0]; 
 
 
 	}

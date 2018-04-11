@@ -34,6 +34,10 @@ public class SerialMessageParser {
 	 */
 	public void parseLine(String dataLine){
 		DataTypes messageFlag = getMessageFlag(dataLine);
+		if (messageFlag==null) {
+			System.out.println("Could not parse message flag: " + dataLine);
+			return; 
+		}
 		
 		//remnove the flag from the string so it's just data 
 		String[] ary = dataLine.split(" ");
@@ -43,22 +47,29 @@ public class SerialMessageParser {
 			stringData+=ary[i]+" "; 
 		}
 		
+		System.out.println("Incomming data: " + dataLine + " flag: " + messageFlag);
+		
 		SensorData sensorData=null; 
 		switch (messageFlag){
 		case EULAR_ANGLES:
 			sensorData= parseString(stringData, 3, messageFlag); 
 			break;
 		case QUATERNION:
-			parseString(stringData, 4, messageFlag);
+			sensorData=parseString(stringData, 4, messageFlag);
 			break;
 		case PRESSURE_TEMPERATURE:
-			parseString(stringData, 2, messageFlag);
+			sensorData=parseString(stringData, 2, messageFlag);
 			break;
 		case RGBDATA:
-			parseString(stringData, 3,messageFlag);
+			sensorData=parseString(stringData, 3,messageFlag);
+			break;
+		case BATTERYDATA:
+			sensorData=parseString(stringData, 1,messageFlag);
 			break;
 		case MTDATA:
 			//northing
+			break;
+		default:
 			break;
 		}	
 		if (sensorData==null) return;
