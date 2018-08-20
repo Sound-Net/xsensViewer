@@ -35,9 +35,9 @@ import main.SensorData;
  * @author Jamie Macaulay 
  *
  */
-public class SensorPane3D extends BorderPane {
+public class SensorPane3D  extends BorderPane {
 
-	private static final String MESH_FILENAME = "src\\resources\\SensorPacakageR4.stl";
+	private static final String MESH_FILENAME = "src\\resources\\SensorPackageR5.stl";
 
 	private static final double MODEL_SCALE_FACTOR = 10;
 
@@ -127,28 +127,51 @@ public class SensorPane3D extends BorderPane {
 //	        n.setRotate(Math.toDegrees(d));                    
 //	    }
 //	}
+	
+	private void setPivot(Rotate rot) {
+		rot.setPivotX(0);
+		rot.setPivotY(130);
+		rot.setPivotZ(-10);
+
+	}
 
 	
 	private void matrixRotateNode(Node n, double roll, double pitch, double yaw){
 		
 	    	Rotate headingR = null, rollR = null, pitchR =null;
-	    	
-	    	n.getTransforms().clear(); 
 	    
-	    	 //has to be in this order
-	    	headingR= new Rotate(); 
-	    	headingR.setAxis(new Point3D(0,1,0));
-	    	headingR.setAngle(-yaw);
-		    n.getTransforms().add(headingR);
-		    
-		    pitchR= new Rotate(); 
-		    pitchR.setAxis(new Point3D(1,0,0));
-		    pitchR.setAngle(pitch);
-		    n.getTransforms().add(pitchR);
+			n.getTransforms().clear(); 
 
+//	    	Translate translate= new Translate(); 
+//	    	translate.setZ(10);
+//	    	translate.setY(-130);    	
+//	    	translate.setX(+400);
+//	    	n.getTransforms().add(translate);
+	    	
+	    	//R5 sensor 
+	    	Rotate pitchR1= new Rotate(); 
+		    pitchR1.setAxis(new Point3D(0,0,1));
+		    pitchR1.setAngle(-90);
+		    setPivot(pitchR1);
+		    n.getTransforms().add(pitchR1);
+	    
+		    pitchR= new Rotate(); 
+		    pitchR.setAxis(new Point3D(0,0,1));
+		    pitchR.setAngle(pitch);
+		    setPivot(pitchR);
+		    n.getTransforms().add(pitchR);
+////	    
+////	    	 //has to be in this order
+	    	headingR= new Rotate(); 
+	    	headingR.setAxis(new Point3D(1,0,0));
+	    	headingR.setAngle(yaw);
+		    setPivot(headingR);
+		    n.getTransforms().add(headingR);
+//		
 		    rollR= new Rotate(); 
-		    rollR.setAxis(new Point3D(0,0,1));
-		    rollR.setAngle(180-roll);
+		    rollR.setAxis(new Point3D(0,1,0));
+		    rollR.setAngle(roll);
+		    setPivot(rollR);
 		    n.getTransforms().add(rollR);
 	    	
 //	    	 //has to be in this order
@@ -185,19 +208,19 @@ public class SensorPane3D extends BorderPane {
 		camera.getTransforms().addAll (
 				rotateY=new Rotate(-45, Rotate.Y_AXIS),
 				rotateX=new Rotate(-45, Rotate.X_AXIS),
-				translate=new Translate(0, 0, -2500));
+				translate=new Translate(0, 0, -3500));
 
 		//create main 3D group 
 		root3D=new Group();
 
 		//group for calibrated measurments, 
 		//		axisGroup=Array3DPane.buildAxes(100, Color.RED, Color.SALMON, Color.BLUE, Color.CYAN, Color.LIMEGREEN, Color.LIME, Color.WHITE);
-		axisGroup=buildAxes(100, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE);
+		axisGroup=buildAxes(1000, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE);
 
 		//group for ellipsoid
 		sensorGroup=new Group(); 
 		sensorGroup.getChildren().addAll(createSensor());
-
+	
 		PointLight light = new PointLight(Color.WHITE);
 		light.setTranslateX(-500);
 		light.setTranslateY(-500);
@@ -210,8 +233,7 @@ public class SensorPane3D extends BorderPane {
 		light1.setTranslateZ(+500);
 
 		root3D.getChildren().addAll(sensorGroup, axisGroup, light,light1);
-
-
+		
 		//Use a SubScene to mix 3D and 2D stuff.        
 		//note- make sure depth buffer in sub scene is enabled. 
 		SubScene subScene = new SubScene(root3D, 500,500, true, SceneAntialiasing.BALANCED);
@@ -222,8 +244,8 @@ public class SensorPane3D extends BorderPane {
 		subScene.setFill(Color.BLACK);
 		subScene.setCamera(camera);
 
-		//handle mouse events for sub scene
-		//handleMouse(subScene); 
+//		//handle mouse events for sub scene
+		handleMouse(pane3D); 
 
 		//create new group to add sub scene to 
 		Group group = new Group();
@@ -315,11 +337,12 @@ public class SensorPane3D extends BorderPane {
 
 
 
-	private void handleMouse(SubScene scene) {
+	private void handleMouse(Node scene) {
 
 		scene.setOnMousePressed(new EventHandler<MouseEvent>() {
 
 			@Override public void handle(MouseEvent me) {
+				System.out.println("Mouse clicked"); 
 				mousePosX = me.getSceneX();
 				mousePosY = me.getSceneY();
 				mouseOldX = me.getSceneX();
@@ -329,7 +352,7 @@ public class SensorPane3D extends BorderPane {
 
 		scene.setOnScroll(new EventHandler<ScrollEvent>() {
 			@Override public void handle(ScrollEvent event) {
-				//System.out.println("Scroll Event: "+event.getDeltaX() + " "+event.getDeltaY()); 
+				System.out.println("Scroll Event: "+event.getDeltaX() + " "+event.getDeltaY()); 
 				translate.setZ(translate.getZ()+  event.getDeltaY() *0.001*translate.getZ());   // + 
 			}
 		});
@@ -394,13 +417,13 @@ public class SensorPane3D extends BorderPane {
 		blueMaterial.setSpecularColor(zAxisSpectacular);
 
 		Text xText=new Text("x"); 
-		xText.setStyle("-fx-font: 20px Tahoma;");
+		xText.setStyle("-fx-font: 90px Tahoma;");
 		xText.setFill(textColour);
 		Text yText=new Text("y"); 
-		yText.setStyle("-fx-font: 20px Tahoma; ");
+		yText.setStyle("-fx-font: 90px Tahoma; ");
 		yText.setFill(textColour);
 		Text zText=new Text("z"); 
-		zText.setStyle("-fx-font: 20px Tahoma; ");
+		zText.setStyle("-fx-font: 90px Tahoma; ");
 		zText.setFill(textColour);
 
 		xText.setTranslateX(axisSize+5);

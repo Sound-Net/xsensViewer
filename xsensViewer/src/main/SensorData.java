@@ -25,30 +25,35 @@ public class SensorData {
 			this.pressure=data[0];
 			this.temperature=data[1]; 
 		}
-		if (flag==DataTypes.BATTERYDATA) batteryLevel=data[0]; 
+		if (flag==DataTypes.BATTERYDATA) {
+			this.batteryLevel=data[0]; 
+			this.batteryLevelV=data[1]; 
+		}
 
 
 	}
 	
-	/**
-	 * Constructor for PTData. 
-	 * @param pressure - the pressure data in mbar;
-	 * @param temperature -the temperature in celsuis; 
-	 */
-	public SensorData(double pressure, double temperature) {
-		this.pressure=pressure; 
-		this.temperature=temperature; 
-	}
+//	/**
+//	 * Constructor for PTData. 
+//	 * @param pressure - the pressure data in mbar;
+//	 * @param temperature -the temperature in celsuis; 
+//	 */
+//	public SensorData(double pressure, double temperature) {
+//		this.pressure=pressure; 
+//		this.temperature=temperature; 
+//	}
 
 	
-	/**
-	 * Constructor for battery data. 
-	 * @param pressure - the pressure data in mbar;
-	 * @param temperature -the temperature in celsuis; 
-	 */
-	public SensorData(double batteryLevel) {
-		this.batteryLevel=batteryLevel; 
-	}
+//	/**
+//	 * Constructor for battery data. 
+//	 * @param pressure - the pressure data in mbar;
+//	 * @param temperature -the temperature in celsuis; 
+//	 */
+//	public SensorData(double batteryLevel) {
+//		this.batteryLevel=batteryLevel; 
+//		this.batteryLevelV=batteryLevelV; 
+//
+//	}
 
 
 	/**
@@ -75,6 +80,12 @@ public class SensorData {
 	 * The battery 
 	 */
 	public Double batteryLevel; 
+	
+	
+	/**
+	 * The battery level in volts
+	 */
+	public Double batteryLevelV; 
 	
 	/**
 	 * Red, green and blue measurements. 

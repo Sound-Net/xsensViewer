@@ -64,7 +64,7 @@ public class SerialMessageParser {
 			sensorData=parseString(stringData, 3,messageFlag);
 			break;
 		case BATTERYDATA:
-			sensorData=parseString(stringData, 1,messageFlag);
+			sensorData=parseString(stringData, 2, messageFlag);
 			break;
 		case MTDATA:
 			//northing

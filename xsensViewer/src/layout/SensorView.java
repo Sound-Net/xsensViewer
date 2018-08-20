@@ -20,6 +20,12 @@ import javafx.scene.text.FontWeight;
 import main.SensorControl;
 import main.SensorData;
 
+/**
+ * The main view.
+ * 
+ * @author Jamie Macaulay
+ *
+ */
 public class SensorView extends BorderPane {
 
 	/*
@@ -38,12 +44,18 @@ public class SensorView extends BorderPane {
 	private Label orientationLabel;
 
 	/*I*
-	 * 
+	 * Pane which shows 3D sensor package. 
 	 */
 	private SensorPane3D sensorPane3D;
 
+	/**
+	 * 
+	 */
 	private Label yawLabel;
 
+	/**
+	 * The label showing pitch
+	 */
 	private Label pitchLabel;
 
 	private Label rollLabel;
@@ -58,7 +70,15 @@ public class SensorView extends BorderPane {
 
 	final String DEGREE  = "\u00b0";
 
+	/**
+	 * The start button. 
+	 */
 	private ButtonBase startButton;
+
+	/**
+	 * Pane which sends commands to the sensor package. 
+	 */
+	private CommandPane commandPane;
 
 	public SensorView(SensorControl sensorControl){
 		this.sensorControl=sensorControl; 
@@ -76,6 +96,9 @@ public class SensorView extends BorderPane {
 		//leftHolder.getChildren().addAll(createDataTypePane()); 
 
 		leftHolder.getChildren().addAll(createDataPane()); 
+		
+		leftHolder.getChildren().add(this.commandPane = new CommandPane(sensorControl)); 
+
 
 		sensorControl.addSensorMessageListener((sensormessage)->{
 			setEulerData(sensormessage);
@@ -85,6 +108,7 @@ public class SensorView extends BorderPane {
 
 		StackPane holderPane= new StackPane(); 
 		holderPane.getChildren().add(sensorPane3D=new SensorPane3D());
+		holderPane.setMouseTransparent(true);
 
 		Pane eulerPane= createEulerAnglesPane(); 
 		StackPane.setAlignment(eulerPane, Pos.TOP_LEFT);
@@ -289,7 +313,8 @@ public class SensorView extends BorderPane {
 		if (sensormessage.batteryLevel!=null) {
 			double batteryLevel=sensormessage.batteryLevel; 
 			if (batteryLevel>98); batteryLevel=100; 
-			batLabel.setText(String.format("%.2f ", batteryLevel) + "%"); 
+			batLabel.setText(String.format("%.2f ", batteryLevel) + "%: " + String.format("%.2fV", sensormessage.batteryLevelV)); 
+		
 		}
 	}
 	

@@ -16,7 +16,7 @@ public class XBusMessage {
 	
 
 	/*! \brief The message ID of the message. */
-	public int mid;
+	public XsMessageID mid;
 
 	/*!
 	 * \brief The length of the payload.

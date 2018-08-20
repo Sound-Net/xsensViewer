@@ -14,54 +14,38 @@ public class XSensMessage {
 	public static int XBUS_MASTERDEVICE = 0xFF;
 	/*! \brief Xbus length byte for message with an extended payload. */
 	public static int XBUS_EXTENDED_LENGTH = 0xFF;
+
 	
-	//message types. Unlike C we keep this as int and convert back to unsigned bytes later. 
-	public final static int XMID_Wakeup = 0x3E;
-	public final static int XMID_WakeupAck = 0x3F;
-	public final static int XMID_ReqDid = 0x00;
-	public final static int XMID_DeviceId = 0x01;
-	public final static int XMID_GotoConfig = 0x30;
-	public final static int XMID_GotoConfigAck = 0x31;
-	public final static int XMID_GotoMeasurement = 0x10;
-	public final static int XMID_GotoMeasurementAck = 0x11;
-	public final static int XMID_MtData2 = 0x36;
-	public final static int XMID_ReqOutputConfig = 0xC0;
-	public final static int XMID_SetOutputConfig = 0xC0;
-	public final static int XMID_OutputConfig = 0xC1;
-	public final static int XMID_Reset = 0x40;
-	public final static int XMID_ResetAck = 0x41;
-	public final static int XMID_Error = 0x42;
-	public final static int XMID_ReqPeriodAck = 0x05;
-	public final static int XMID_ReqPeriod = 0x04;
-	public final static int XMID_ReqSTMessage = 0xD5;
-	public final static int XMID_ReqSTMessageAck = 0xD4;
-	public final static int XMID_SetNoRotation = 0x22;
-	
-	// XDI is a flag for the data a message contains. 
-	public static int XDI_PacketCounter = 0x1020;
-	public static int XDI_SampleTimeFine = 0x1060;
-	public static int XDI_Quaternion = 0x2010;
-	public static int XDI_DeltaV = 0x4010;
-	public static int XDI_Acceleration = 0x4020;
-	public static int XDI_RateOfTurn = 0x8020;
-	public static int XDI_DeltaQ = 0x8030;
-	public static int XDI_MagneticField = 0xC020;
-	public static int XDI_StatusWord = 0xE020;
-	public static int XDI_EulerAngles = 0x2030;
-	public static int XDI_Temperature = 0x2040; // 2064 in decimal - temperature data
-	public static int XDI_Pressure = 0x2050; // 2080 in decimal - pressure data
-	public static int XDI_RGB = 0x2060; // 2096 in decimal- red, green, blue data
-	public static int XDI_BAT = 0x2070; // 2112 in decimal- battery data
-	
+	/**
+	 * Converts an array fo ints with unsigned byte values to java signed bytes
+	 * to be sent throught the serial port
+	 * @param mtest
+	 * @return
+	 */
+	public static byte[] raw2Bytes(int[] raw) {
+		byte[] array = new byte[raw.length];
+		for (int i=0; i<raw.length; i++){
+			array[i]=signedByte(raw[i]);
+		}
+		return array;
+	}
 	
 	/**
 	 * Convert an signed byte to unsigned int vale. 
-	 * @param b
-	 * @return
+	 * @param b input byte
+	 * @return unisgned in value
 	 */
 	 public static int unsignedToBytes(byte b) {
 		    return b & 0xFF;
 	}
+	 
+	 /**
+	  * Get the signed byte value from unisgned byte within int (because java default is signed)
+	  * @return the signed byte value. 
+	  */
+	 public static byte signedByte(int bytevalue) {
+		 return (byte) ((bytevalue << 24) >> 24); 
+	 }
 	 
 	 
 	 /*!
@@ -117,7 +101,7 @@ public class XSensMessage {
 		byte checksum = (byte) -XBUS_MASTERDEVICE;
 		//System.out.println("checksum1 " + checksum);
 
-		raw[count]= message.mid;
+		raw[count]= message.mid.getValue();
 		//printf(" MID %u \n", message->mid);
 		checksum -= raw[count++];
 		//System.out.println("checksum2 " + checksum);
@@ -174,7 +158,7 @@ public class XSensMessage {
     	
     	XBusMessage mtest = new XBusMessage(); 
     	//mtest.mid=XMID_GotoMeasurement;
-    	mtest.mid=XMID_ReqOutputConfig;
+    	mtest.mid=XsMessageID.XMID_ReqOutputConfig;
 
     	
     	int len = XbusMessage_format(raw,  mtest);
@@ -184,6 +168,7 @@ public class XSensMessage {
     		System.out.print(" " + raw[i]);
     	}
 	}
+
 	
 	
 	

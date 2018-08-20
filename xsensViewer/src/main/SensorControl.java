@@ -1,5 +1,6 @@
 package main;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import comms.SerialComms;
@@ -8,6 +9,9 @@ import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
 import javafx.concurrent.Task;
 import layout.SensorMessageListener;
+import xsens.XBusMessage;
+import xsens.XSensMessage;
+import xsens.XsMessageID;
 
 /**
  * Main control class for communication with the sensor package. 
@@ -50,7 +54,11 @@ public class SensorControl extends SensorMain {
 	 * The connected status flag
 	 */
 	private final static byte[] STATUS_CONNECTED=new byte[] {0x00};
-
+	
+	/**
+	 * Raw buffer for message out.  
+	 */
+	private int[] messageOut = new int[255]; 
 	
 	public SensorControl(){
 		params= new SerialParams();
@@ -222,6 +230,28 @@ public class SensorControl extends SensorMain {
 		//currently all that is needed is for the serial port to disconnect.
 		//In future we can send messages to the device. 
 		this.stopSerial();
+	}
+
+	/**
+	 * Send a message to the sensor. At the moment only supports commands without any 
+	 * associated data. 
+	 * @param the command to send. 
+	 */
+	public void sendMessage(XsMessageID value) {
+    	XBusMessage mtest = new XBusMessage(); 
+    	//mtest.mid=XMID_GotoMeasurement;
+    	mtest.mid=value;
+    	int len = XSensMessage.XbusMessage_format(messageOut,  mtest);
+    	
+    	//now need to send the message
+    	try {
+    		System.out.println(serialComms.getOutputStream());
+			serialComms.getOutputStream().write(XSensMessage.raw2Bytes(messageOut), 0, len);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
 	}
 
 
