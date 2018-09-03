@@ -22,5 +22,5 @@ public class XBusData
    */
    public int[] data= new int[XBusMessage.ARRAY_SIZE];
    
-   
+
  }

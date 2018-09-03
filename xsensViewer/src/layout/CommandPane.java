@@ -84,9 +84,4 @@ public class CommandPane extends SerialCommPane {
 		return messageBackLabel;
 	}
 	
-	
-
-	
-	
-
 }

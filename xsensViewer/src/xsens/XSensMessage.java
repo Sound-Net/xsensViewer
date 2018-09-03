@@ -168,13 +168,6 @@ public class XSensMessage {
     		System.out.print(" " + raw[i]);
     	}
 	}
-
-	
-	
-	
 	
 }
 	
-
-
-
