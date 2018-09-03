@@ -1,5 +1,6 @@
 package main;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import comms.SerialComms;
@@ -8,7 +9,15 @@ import gnu.io.SerialPortEvent;
 import gnu.io.SerialPortEventListener;
 import javafx.concurrent.Task;
 import layout.SensorMessageListener;
+import xsens.XBusMessage;
+import xsens.XSensMessage;
+import xsens.XsMessageID;
 
+/**
+ * Main control class for communication with the sensor package. 
+ * @author Jamie Macaulay
+ *
+ */
 public class SensorControl extends SensorMain {
 	
 	/**
@@ -40,7 +49,16 @@ public class SensorControl extends SensorMain {
 	 * Array of listeners for sensor messages
 	 */
 	ArrayList<SensorMessageListener> sensMessageListeners; 
-
+	
+	/**
+	 * The connected status flag
+	 */
+	private final static byte[] STATUS_CONNECTED=new byte[] {0x00};
+	
+	/**
+	 * Raw buffer for message out.  
+	 */
+	private int[] messageOut = new int[255]; 
 	
 	public SensorControl(){
 		params= new SerialParams();
@@ -54,11 +72,8 @@ public class SensorControl extends SensorMain {
 	 * Start streaming serial data. 
 	 */
 	public void startSerial() {
-		
-		
 		serialComms.setPort(params.port); 
 		serialComms.setBaud(params.baudRate);
-
 		
 		connect=true; 
 		serialTask = new SerialTask();
@@ -67,8 +82,21 @@ public class SensorControl extends SensorMain {
 		th.start();
 	}
 	
+	/**
+	 * Check whether the serial port is sending data to the program
+	 * @return true if the serial port is open and sending data. 
+	 */
+	public boolean isSerialRunning() {
+		if (serialTask==null) return false; 
+		if (serialTask.isCancelled()) return false;
+		return true; 
+	}
+	
+	/**
+	 * Stop the serial port aquiring data and close the port. 
+	 */
 	public void stopSerial() {
-		serialTask.cancel(); 
+		serialTask.cancel(false);
 	}
 	
 	
@@ -82,7 +110,7 @@ public class SensorControl extends SensorMain {
 	
 	
 	/**
-	 * The serial params 
+	 * Get the serial params. Baudrate etc. 
 	 * @return the params
 	 */
 	public SerialParams getParams() {
@@ -108,7 +136,11 @@ public class SensorControl extends SensorMain {
 		}
 	}
 	
-	
+	/**
+	 * Listens for data on the specified serial port untill told to stop. 
+	 * @author Jamie Macaulay
+	 *
+	 */
 	class SerialListener implements SerialPortEventListener {
 		
 		/**
@@ -145,27 +177,42 @@ public class SensorControl extends SensorMain {
 	/* 
 	 * Runs the serial thread. 
 	 */
+	int count=0;
     public class SerialTask extends Task<Integer> {
   
 		@Override protected Integer call() throws Exception {
+			try {
         	serialComms.initialize();
         	
         	if ( serialComms.getSerialPort()!=null){
-        		System.out.println("Add event listener;");
+        		//System.out.println("Add event listener;");
         		serialComms.getSerialPort().addEventListener(new SerialListener(serialComms));
-        	
         	}
         	else return -1; 
         	
         	while (connect==true && !isCancelled()){
-        		Thread.sleep(250);
+        		Thread.sleep(500);
+        		//write a byte to the outpur stream - this allows the 
+        		//device to recieve a few bytes of serial data and know it's connecyted to the PC. 
+        		count++;
+        		if (count%6==0) {
+            		System.out.println("Send output stream: " + isCancelled());
+            		serialComms.getOutputStream().write(STATUS_CONNECTED);
+        		}
         	}
         	
         	serialComms.close();
+        	serialComms.getSerialPort().close();
 			return 0;
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+				return -1; 
+			}
         }
 
     }
+ 
 
     
     /**
@@ -174,6 +221,37 @@ public class SensorControl extends SensorMain {
      */
 	public SerialMessageParser getSerialParser() {
 		return serialMessageParser; 
+	}
+
+	/**
+	 * Send a message to the device to go into deployment mode. 
+	 */
+	public void deploy() {
+		//currently all that is needed is for the serial port to disconnect.
+		//In future we can send messages to the device. 
+		this.stopSerial();
+	}
+
+	/**
+	 * Send a message to the sensor. At the moment only supports commands without any 
+	 * associated data. 
+	 * @param the command to send. 
+	 */
+	public void sendMessage(XsMessageID value) {
+    	XBusMessage mtest = new XBusMessage(); 
+    	//mtest.mid=XMID_GotoMeasurement;
+    	mtest.mid=value;
+    	int len = XSensMessage.XbusMessage_format(messageOut,  mtest);
+    	
+    	//now need to send the message
+    	try {
+    		System.out.println(serialComms.getOutputStream());
+			serialComms.getOutputStream().write(XSensMessage.raw2Bytes(messageOut), 0, len);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
 	}
 
 

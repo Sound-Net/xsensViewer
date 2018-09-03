@@ -80,8 +80,13 @@ public class SerialComms implements SerialPortEventListener {
 	}
 
 
+
+	/**
+	 * Close the serial port. 
+	 */
 	public synchronized void close() {
 		if (serialPort != null) {
+			System.out.println("CLOSE THE SERIAL PORT"); 
 			serialPort.removeEventListener();
 			serialPort.close();
 		}
@@ -125,6 +130,14 @@ public class SerialComms implements SerialPortEventListener {
 	 */
 	public BufferedReader getBufferredInput() {
 		return input;
+	}
+	
+	/**
+	 * Get the output stream for writing to the serial port. 
+	 * @return the output - the output stream. 
+	 */
+	public OutputStream getOutputStream() {
+		return output;
 	}
 
 
