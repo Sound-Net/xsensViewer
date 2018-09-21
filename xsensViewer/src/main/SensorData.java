@@ -1,6 +1,5 @@
 package main;
 
-import comms.SerialMessageParser;
 import comms.SerialMessageParser.DataTypes;
 
 /**
@@ -10,11 +9,14 @@ import comms.SerialMessageParser.DataTypes;
  */
 public class SensorData {
 	
+	/**
+	 * The data type. 
+	 */
 	public DataTypes flag;
 
 	/**
 	 * Constructor for angles. 
-	 * @param angles - angles. lengfth of 3 is euler angles in degrres. Length of 4 is a quaternion. 
+	 * @param angles - angles. length of 3 is Euler angles in degrees. Length of 4 is a quaternion. 
 	 */
 	public SensorData(double[] data, DataTypes flag) {
 		this.flag=flag; 
@@ -29,8 +31,15 @@ public class SensorData {
 			this.batteryLevel=data[0]; 
 			this.batteryLevelV=data[1]; 
 		}
-
-
+	}
+	
+	/**
+	 * Constructor which for  raw byte data mt message.   
+	 * @param outArray - raw MT message data. 
+	 */
+	public SensorData(int[] outArray) {
+		this.flag=DataTypes.MTMESSAGE; 
+		this.mtMessage=outArray; 
 	}
 	
 //	/**
@@ -55,6 +64,11 @@ public class SensorData {
 //
 //	}
 
+
+	/**
+	 * Raw MT message byte data. 
+	 */
+	public int[] mtMessage;
 
 	/**
 	 * Euler angles in degrees

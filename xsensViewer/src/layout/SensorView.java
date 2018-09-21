@@ -313,10 +313,18 @@ public class SensorView extends BorderPane {
 		if (sensormessage.batteryLevel!=null) {
 			double batteryLevel=sensormessage.batteryLevel; 
 			if (batteryLevel>98); batteryLevel=100; 
-			batLabel.setText(String.format("%.2f ", batteryLevel) + "%: " + String.format("%.2fV", sensormessage.batteryLevelV)); 
+			batLabel.setText(String.format("%.2f ", batteryLevel) + "%: " + String.format("%.2fV", sensormessage.batteryLevelV));
+		}
 		
+		if (sensormessage.flag == DataTypes.MTMESSAGE) {
+			String dataStr="MTMessage: "; 
+			for (int i=0; i<sensormessage.mtMessage.length; i++) {
+				dataStr+=(sensormessage.mtMessage[i] +  " "); 
+			}
+			commandPane.setMessageBackLabelText(dataStr);
 		}
 	}
+	
 	
 	/**
 	 * Set all the data labels blank. 

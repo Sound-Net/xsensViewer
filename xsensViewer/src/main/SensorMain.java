@@ -8,6 +8,12 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import layout.SensorView;
  
+/**
+ * Starts the JavaFX thread and UI application. 
+ * 
+ * @author Jamie Macaulay 
+ *
+ */
 public class SensorMain extends Application {
 	
 	public String darkStyle="resources//jmetroDarkTheme.css";

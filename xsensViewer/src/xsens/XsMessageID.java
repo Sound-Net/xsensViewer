@@ -29,10 +29,12 @@ public enum XsMessageID  {
 	XMID_ReqSTMessage ( 0xD5),
 	XMID_ReqSTMessageAck ( 0xD4),
 	XMID_SetNoRotation ( 0x22),
-	XMID_ReqFilterProfile (0x64); 
+	XMID_ReqFilterProfile (0x64),
+	XMID_ReqFilterProfileAck (0x65); 
+
 
 	/**
-	 * The unisgned byte value represented as an int. 
+	 * The unsigned byte value represented as an int. 
 	 */
 	private int bytevalue; 
 

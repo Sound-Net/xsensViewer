@@ -84,4 +84,12 @@ public class CommandPane extends SerialCommPane {
 		return messageBackLabel;
 	}
 	
+	/**
+	 * Set text on message back label. 
+	 * @param text - the text on message back label. 
+	 */
+	public void setMessageBackLabelText(String text) {
+		 messageBackLabel.setText(text);
+	}
+	
 }

@@ -387,8 +387,6 @@ public class SensorPane3D  extends BorderPane {
 					translate.setX(translate.getX() -mouseDeltaX * modifierFactor * modifier * 5);
 					translate.setY(translate.getY() - mouseDeltaY * modifierFactor * modifier * 5);   // +
 				}
-
-
 			}
 		});
 	}

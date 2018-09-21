@@ -13,7 +13,7 @@ public class SerialMessageParser {
 
 	
 	public enum DataTypes {
-		EULAR_ANGLES, QUATERNION, PRESSURE_TEMPERATURE, BATTERYDATA, RGBDATA, MTDATA
+		EULAR_ANGLES, QUATERNION, PRESSURE_TEMPERATURE, BATTERYDATA, RGBDATA, MTDATA, MTMESSAGE
 	}
 
 			
@@ -29,17 +29,19 @@ public class SerialMessageParser {
 	}
 
 	/**
-	 * Parse the incomming data. 
+	 * Parse the incoming data. 
 	 * @param line - the incoming serial line
 	 */
 	public void parseLine(String dataLine){
 		DataTypes messageFlag = getMessageFlag(dataLine);
 		if (messageFlag==null) {
+			System.out.println("------------");
 			System.out.println("Could not parse message flag: " + dataLine);
+			System.out.println("------------");
 			return; 
 		}
 		
-		//remnove the flag from the string so it's just data 
+		//remove the flag from the string so it's just data 
 		String[] ary = dataLine.split(" ");
 		String stringData=""; 
 		
@@ -66,6 +68,9 @@ public class SerialMessageParser {
 		case BATTERYDATA:
 			sensorData=parseString(stringData, 2, messageFlag);
 			break;
+		case MTMESSAGE:
+			sensorData=parseCommandString(stringData);
+			break;
 		case MTDATA:
 			//northing
 			break;
@@ -75,6 +80,23 @@ public class SerialMessageParser {
 		if (sensorData==null) return;
 		newMessage(sensorData);
 
+	}
+
+	/**
+	 * Convert a an MT command string to raw byte data. 
+	 * @param stringData - data string
+	 * @return sensor data object
+	 */
+	private SensorData parseCommandString(String stringData) {
+		String[] ary = stringData.split(" ");
+		int[] outArray= new int[ary.length]; 
+		//have a set of euler angles
+		for (int i=0; i<outArray.length; i++){
+			outArray[i]=Integer.valueOf(ary[i]);
+		}
+		
+		SensorData sensorData = new SensorData(outArray); 
+		return sensorData; 
 	}
 
 	/**
@@ -101,6 +123,9 @@ public class SerialMessageParser {
 		}
 		if (ary[0].equals("BAT")) {
 			flag=DataTypes.BATTERYDATA; 
+		}
+		if (ary[0].equals("MT")) {
+			flag=DataTypes.MTMESSAGE; 
 		}
 		return flag; 
 	}
