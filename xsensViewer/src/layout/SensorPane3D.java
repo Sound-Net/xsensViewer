@@ -1,6 +1,6 @@
 package layout;
 
-import java.io.File;
+import java.net.URL;
 import java.util.Comparator;
 
 import com.interactivemesh.jfx.importer.stl.StlMeshImporter;
@@ -37,7 +37,9 @@ import main.SensorData;
  */
 public class SensorPane3D  extends BorderPane {
 
-	private static final String MESH_FILENAME = "src\\resources\\SensorPackageR5.stl";
+//	private static final String MESH_FILENAME = "SensorPackageR5.stl";
+	
+	public final URL MESH_FILENAME = ClassLoader.getSystemResource("resources/SensorPackageR5.stl");
 
 	private static final double MODEL_SCALE_FACTOR = 10;
 
@@ -258,19 +260,41 @@ public class SensorPane3D  extends BorderPane {
 		return pane3D;
 	}
 
-	static MeshView[] loadMeshViews() {
-		File file = new File(MESH_FILENAME);
+	static MeshView[] loadMeshViews(URL file) {
+	//	File file = new File(MESH_FILENAME);
+		
+        System.out.println(file.getPath());
+
 		StlMeshImporter importer = new StlMeshImporter();
 		importer.read(file);
 		Mesh mesh = importer.getImport();
 
-		return new MeshView[] { new MeshView(mesh) };
+		return new MeshView[] {new MeshView(mesh) };
 	} 
 
 
 	private MeshView[] createSensor() {
 
-		MeshView[] meshViews = loadMeshViews();
+//		URL url = getClass().getResource(MESH_FILENAME);
+//		
+//		System.out.println(url.getPath());
+//		
+//		//TEST
+//		try {
+//			String fileName= "C:\\Users\\macst\\Desktop\\jtestLaunch4j.txt";
+//			String str = url.getPath();
+//				    BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
+//				    writer.write(str);
+//				     
+//				    writer.close();
+//		}
+//		catch (Exception e){
+//			e.printStackTrace();
+//		}
+		
+//		File file = new File(url.getPath());
+		
+		MeshView[] meshViews = loadMeshViews(MESH_FILENAME);
 		
 		for (int i = 0; i < meshViews.length; i++) {
 			meshViews[i].setRotationAxis(new Point3D(0,1,0));
@@ -278,7 +302,6 @@ public class SensorPane3D  extends BorderPane {
 			meshViews[i].setScaleX(MODEL_SCALE_FACTOR);
 			meshViews[i].setScaleY(MODEL_SCALE_FACTOR);
 			meshViews[i].setScaleZ(MODEL_SCALE_FACTOR);
-
 
 			PhongMaterial sample = new PhongMaterial(jewelColor);
 			sample.setSpecularColor(lightColor);
@@ -343,7 +366,7 @@ public class SensorPane3D  extends BorderPane {
 		scene.setOnMousePressed(new EventHandler<MouseEvent>() {
 
 			@Override public void handle(MouseEvent me) {
-				System.out.println("Mouse clicked"); 
+				//System.out.println("Mouse clicked"); 
 				mousePosX = me.getSceneX();
 				mousePosY = me.getSceneY();
 				mouseOldX = me.getSceneX();
@@ -353,7 +376,7 @@ public class SensorPane3D  extends BorderPane {
 
 		scene.setOnScroll(new EventHandler<ScrollEvent>() {
 			@Override public void handle(ScrollEvent event) {
-				System.out.println("Scroll Event: "+event.getDeltaX() + " "+event.getDeltaY()); 
+				//System.out.println("Scroll Event: "+event.getDeltaX() + " "+event.getDeltaY()); 
 				translate.setZ(translate.getZ()+  event.getDeltaY() *0.001*translate.getZ());   // + 
 			}
 		});

@@ -87,7 +87,6 @@ public class SensorView extends BorderPane {
 		leftHolder.setSpacing(5);
 		leftHolder.setPrefWidth(250);
 
-		//leftHolder.getStylesheets().add(darkStyle);
 		leftHolder.getChildren().add(serialCommPane=new SerialCommPane());
 		serialCommPane.setParams(sensorControl.getParams());
 
@@ -215,7 +214,7 @@ public class SensorView extends BorderPane {
 	}
 
 	/**
-	 * Create pane whihc shows incomming data
+	 * Create pane which shows incoming data
 	 * @return
 	 */
 	private Pane createDataPane(){
@@ -247,7 +246,7 @@ public class SensorView extends BorderPane {
 	 * @return a bold label. 
 	 */
 	private Label setLabelFontBold(Label label) {
-		label.setFont(Font.font("Verdanna", FontWeight.BOLD, 30));
+		label.setFont(Font.font("Verdanna", FontWeight.BOLD, 16));
 		return label; 
 	}
 

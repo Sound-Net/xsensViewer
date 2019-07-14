@@ -193,7 +193,7 @@ public class SensorControl extends SensorMain {
         	while (connect==true && !isCancelled()){
         		Thread.sleep(500);
         		//write a byte to the outpur stream - this allows the 
-        		//device to recieve a few bytes of serial data and know it's connecyted to the PC. 
+        		//device to recieve a few bytes of serial data and know it's connected to the PC. 
         		count++;
         		if (count%6==0) {
             		System.out.println("Send output stream: " + isCancelled());
