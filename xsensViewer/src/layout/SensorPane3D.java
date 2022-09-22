@@ -39,7 +39,7 @@ public class SensorPane3D  extends BorderPane {
 
 //	private static final String MESH_FILENAME = "SensorPackageR5.stl";
 	
-	public final URL MESH_FILENAME = ClassLoader.getSystemResource("resources/SensorPackageR5.stl");
+	public final URL MESH_FILENAME = ClassLoader.getSystemResource("resources/SensorPackage_PLA.stl");
 
 	private static final double MODEL_SCALE_FACTOR = 10;
 
@@ -131,9 +131,18 @@ public class SensorPane3D  extends BorderPane {
 //	}
 	
 	private void setPivot(Rotate rot) {
+		
+		//For pla
 		rot.setPivotX(0);
-		rot.setPivotY(130);
-		rot.setPivotZ(-10);
+		rot.setPivotY(0);
+		rot.setPivotZ(0);
+
+		
+		
+//		//For R5
+//		rot.setPivotX(0);
+//		rot.setPivotY(130);
+//		rot.setPivotZ(-10);
 
 	}
 
@@ -177,20 +186,42 @@ public class SensorPane3D  extends BorderPane {
 //		    n.getTransforms().add(pitchR);
 ////	    
 			
+//
+//			//R5
+//	    	headingR= new Rotate(); 
+//	    	headingR.setAxis(new Point3D(0,1,0));
+//	    	headingR.setAngle(-yaw);
+//		    n.getTransforms().add(headingR);
+//		    
+//		    pitchR= new Rotate(); 
+//		    pitchR.setAxis(new Point3D(1,0,0));
+//		    pitchR.setAngle(pitch);
+//		    n.getTransforms().add(pitchR);
+//
+//		    rollR= new Rotate(); 
+//		    rollR.setAxis(new Point3D(0,0,1));
+//		    rollR.setAngle(-roll);
+//		    n.getTransforms().add(rollR);
+
+
+			//PLA
 	    	headingR= new Rotate(); 
 	    	headingR.setAxis(new Point3D(0,1,0));
-	    	headingR.setAngle(-yaw);
+	    	headingR.setAngle(yaw);
 		    n.getTransforms().add(headingR);
 		    
 		    pitchR= new Rotate(); 
 		    pitchR.setAxis(new Point3D(1,0,0));
-		    pitchR.setAngle(pitch);
+		    pitchR.setAngle(-pitch);
 		    n.getTransforms().add(pitchR);
 
 		    rollR= new Rotate(); 
 		    rollR.setAxis(new Point3D(0,0,1));
-		    rollR.setAngle(-roll);
+		    rollR.setAngle(roll+180);
 		    n.getTransforms().add(rollR);
+
+		    
+
 
 	}
 	
@@ -207,7 +238,7 @@ public class SensorPane3D  extends BorderPane {
 		camera.setFarClip(15000);
 		camera.setNearClip(0.1);
 		camera.setDepthTest(DepthTest.ENABLE);
-		camera.getTransforms().addAll (
+		camera.getTransforms().addAll ( 
 				rotateY=new Rotate(-45, Rotate.Y_AXIS),
 				rotateX=new Rotate(-45, Rotate.X_AXIS),
 				translate=new Translate(0, 0, -3500));
@@ -233,8 +264,19 @@ public class SensorPane3D  extends BorderPane {
 		light1.setTranslateX(+500);
 		light1.setTranslateY(+500);
 		light1.setTranslateZ(+500);
+		
+		
+		PointLight light2 = new PointLight(Color.WHITE);
+		light1.setTranslateX(0);
+		light1.setTranslateY(0);
+		light1.setTranslateZ(-500);
+		
+		PointLight light3 = new PointLight(Color.WHITE);
+		light1.setTranslateX(0);
+		light1.setTranslateY(0);
+		light1.setTranslateZ(+500);
 
-		root3D.getChildren().addAll(sensorGroup, axisGroup, light,light1);
+		root3D.getChildren().addAll(sensorGroup, axisGroup, light,light1,light2,light3);
 		
 		//Use a SubScene to mix 3D and 2D stuff.        
 		//note- make sure depth buffer in sub scene is enabled. 
@@ -297,8 +339,17 @@ public class SensorPane3D  extends BorderPane {
 		MeshView[] meshViews = loadMeshViews(MESH_FILENAME);
 		
 		for (int i = 0; i < meshViews.length; i++) {
-			meshViews[i].setRotationAxis(new Point3D(0,1,0));
-			meshViews[i].setRotate(90+180); //for R5 sensor. 
+			
+			/***PLA sensor***/
+			meshViews[i].setRotationAxis(new Point3D(1,0,0));
+			meshViews[i].setRotate(90); //for R5 sensor. 
+			
+			
+			
+//			meshViews[i].setRotationAxis(new Point3D(0,0,1));
+//			meshViews[i].setRotate(0); //for R5 sensor. 
+//			/***PLA sensor***/
+
 			meshViews[i].setScaleX(MODEL_SCALE_FACTOR);
 			meshViews[i].setScaleY(MODEL_SCALE_FACTOR);
 			meshViews[i].setScaleZ(MODEL_SCALE_FACTOR);

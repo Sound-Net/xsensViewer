@@ -21,8 +21,11 @@ public enum XsDataIdentifier {
 	 XDI_Temperature ( 0x2040), // 2064 in decimal - temperature data
 	 XDI_Pressure ( 0x2050), // 2080 in decimal - pressure data
 	 XDI_RGB ( 0x2060), // 2096 in decimal- red, green, blue data
-	 XDI_BAT ( 0x2070); 	// 2112 in decimal- battery data
-	
+	 XDI_BAT ( 0x2070), 	// 2112 in decimal- battery data
+	 XDI_BATV ( 0x2080), 
+	 XDI_LightSpectrum (0x2090),
+	 XDI_SDCardUsed    (0x3000);
+
 	private int value;
 
 	XsDataIdentifier(int value){

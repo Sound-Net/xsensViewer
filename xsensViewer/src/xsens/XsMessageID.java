@@ -9,7 +9,7 @@ package xsens;
 public enum XsMessageID  {
 
 	//message types. Unlike C we keep this as int and convert back to unsigned bytes later. 
-	XMID_Wakeup(0x3E),
+	XMID_Wakeup (0x3E),
 	XMID_WakeupAck ( 0x3F),
 	XMID_ReqDid ( 0x00),
 	XMID_DeviceId ( 0x01),
@@ -30,7 +30,9 @@ public enum XsMessageID  {
 	XMID_ReqSTMessageAck ( 0xD4),
 	XMID_SetNoRotation ( 0x22),
 	XMID_ReqFilterProfile (0x64),
-	XMID_ReqFilterProfileAck (0x65); 
+	XMID_ReqFilterProfileAck (0x65), 
+	XMID_SetRTCTime (0x66), 
+	XMID_ReqSDFormat(0x67); 
 
 
 	/**

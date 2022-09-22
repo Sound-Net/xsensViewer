@@ -5,12 +5,18 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Enumeration;
 
-import gnu.io.CommPortIdentifier;
-import gnu.io.SerialPort;
-import gnu.io.SerialPortEvent;
-import gnu.io.SerialPortEventListener;
+import com.fazecast.jSerialComm.SerialPort;
+import com.fazecast.jSerialComm.SerialPortDataListener;
+import com.fazecast.jSerialComm.SerialPortEvent;
 
-public class SerialComms implements SerialPortEventListener {
+
+/**
+ * Handles comms with one serial port. 
+ * 
+ * @author Jamie Macaulay
+ *
+ */
+public class SerialComms implements SerialPortDataListener {
 
 	/**
 	 * The serial port
@@ -20,13 +26,11 @@ public class SerialComms implements SerialPortEventListener {
 	/**
 	 * The current port name; 
 	 */
-	String portName = "COM4"; 
+	String portName = "cu.usbmodem14201"; 
 
 	private BufferedReader input;
 	private OutputStream output;
 	private static final int TIME_OUT = 2000;
-	
-	
 	
 	private int dataRate = 38400;
 
@@ -40,20 +44,9 @@ public class SerialComms implements SerialPortEventListener {
 		
 		serialPort=null;
 
-		CommPortIdentifier portId = null;
-		Enumeration portEnum = CommPortIdentifier.getPortIdentifiers();
-
-		//First, Find an instance of serial port as set in PORT_NAMES.
-		while (portEnum.hasMoreElements()) {
-			CommPortIdentifier currPortId = (CommPortIdentifier) portEnum.nextElement();
-				if (currPortId.getName().equals(portName)) {
-					portId = currPortId;
-					break;
-				
-			}
-		}
-
-		if (portId == null) {
+		serialPort = SerialPort.getCommPort(portName);		
+		
+		if (serialPort == null) {
 			System.out.println("Could not find COM port." + portName);
 			return;
 		}
@@ -61,43 +54,36 @@ public class SerialComms implements SerialPortEventListener {
 		try {
 			
 			final int DATA_RATE= dataRate; 
-			serialPort = (SerialPort) portId.open(this.getClass().getName(),
-					TIME_OUT);
-			serialPort.setSerialPortParams(DATA_RATE,
-					SerialPort.DATABITS_8,
-					SerialPort.STOPBITS_1,
-					SerialPort.PARITY_NONE);
+			
+			serialPort.openPort();
+			serialPort.setBaudRate(DATA_RATE); 
 
+			serialPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
 			// open the streams
 			input = new BufferedReader(new InputStreamReader(serialPort.getInputStream()));
 			output = serialPort.getOutputStream();
+			
+//			try
+//			{
+//			   for (int j = 0; j < 100000; ++j)
+//			    System.out.print((char)input.read());
+//			   input.close();
+//			} catch (Exception e) { e.printStackTrace(); }
 
 			//serialPort.addEventListener(this);
-			serialPort.notifyOnDataAvailable(true);
 		} catch (Exception e) {
 			System.err.println(e.toString());
 		}
 	}
 
-
-
-	/**
-	 * Close the serial port. 
-	 */
-	public synchronized void close() {
-		if (serialPort != null) {
-			System.out.println("CLOSE THE SERIAL PORT"); 
-			serialPort.removeEventListener();
-			serialPort.close();
-		}
-	}
-
+	
 	@Override
-	public synchronized void serialEvent(SerialPortEvent oEvent) {
-		if (oEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
+	public void serialEvent(SerialPortEvent event) {
+		//System.out.println("Serial port events: " + event.getEventType());
+		if (event.getEventType() == SerialPort.LISTENING_EVENT_DATA_AVAILABLE) {
 			try {
 				String inputLine=null;
-				if (input.ready()) {
+			if (input.ready()) {
 					inputLine = input.readLine();
 					System.out.println(inputLine);
 				}
@@ -106,12 +92,34 @@ public class SerialComms implements SerialPortEventListener {
 				System.err.println(e.toString());
 			}
 		}
-		// Ignore all the other eventTypes, but you should consider the other ones.
+		
+	}
+
+
+	/**
+	 * Close the serial port. 
+	 */
+	public synchronized void close() {
+		if (serialPort != null) {
+			System.out.println("CLOSE THE SERIAL PORT"); 
+			serialPort.closePort();
+		}
 	}
 
 	public static void main(String[] args) throws Exception {
-		SerialPortComm3 main = new SerialPortComm3();
+		
+		SerialPort[] commPorts = SerialPort.getCommPorts();
+		for (int i=0; i<commPorts.length; i++) {
+			System.out.println(commPorts[i].getSystemPortName());
+		}
+		
+		
+		
+		SerialComms main = new SerialComms();
 		main.initialize();
+		
+		main.serialPort.addDataListener(main); 
+		
 		Thread t=new Thread() {
 			public void run() {
 				//the following line will keep this app alive for 1000    seconds,
@@ -121,6 +129,7 @@ public class SerialComms implements SerialPortEventListener {
 		};
 		t.start();
 		System.out.println("Started");
+		
 	}
 
 
@@ -166,6 +175,14 @@ public class SerialComms implements SerialPortEventListener {
 	public SerialPort getSerialPort() {
 		return serialPort;
 	}
+
+
+	@Override
+	public int getListeningEvents() {
+		return SerialPort.LISTENING_EVENT_DATA_AVAILABLE;
+	}
+
+
 
 
 }

@@ -9,7 +9,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import main.SensorControl;
+import main.SerialSensorControl;
 import xsens.XsMessageID;
 
 /**
@@ -33,10 +33,10 @@ public class CommandPane extends SerialCommPane {
 	/**
 	 * Reference to the sensor controller. 
 	 */
-	private SensorControl sensorControl; 
+	private SerialSensorControl sensorControl; 
 	
 	
-	public CommandPane(SensorControl sensorControl) {
+	public CommandPane(SerialSensorControl sensorControl) {
 		this.sensorControl=sensorControl; 
 		this.setCenter(createCommandPane());
 	}
