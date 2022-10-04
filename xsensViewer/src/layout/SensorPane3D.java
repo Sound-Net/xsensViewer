@@ -204,10 +204,10 @@ public class SensorPane3D  extends BorderPane {
 //		    n.getTransforms().add(rollR);
 
 
-			//PLA
+			//PLABuiy 2 sensors V1
 	    	headingR= new Rotate(); 
 	    	headingR.setAxis(new Point3D(0,1,0));
-	    	headingR.setAngle(yaw);
+	    	headingR.setAngle(-yaw);
 		    n.getTransforms().add(headingR);
 		    
 		    pitchR= new Rotate(); 

@@ -1,7 +1,11 @@
 package main;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.TimeZone;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortDataListener;
@@ -11,6 +15,7 @@ import comms.SerialComms;
 import comms.SerialMessageParser;
 import javafx.concurrent.Task;
 import layout.SensorMessageListener;
+import main.SensorsControl.SensorUpdate;
 import xsens.XBusMessage;
 import xsens.XSensMessage;
 import xsens.XsMessageID;
@@ -53,6 +58,11 @@ public class SerialSensorControl implements SensorControl {
 	ArrayList<SensorMessageListener> sensMessageListeners; 
 	
 	/**
+	 * Listens for any updates form the sensor - e.g. whether they have been connected etc. 
+	 */
+	private ArrayList<SensorUpdateListener> updateListeners = new ArrayList<SensorUpdateListener>(); 
+
+	/**
 	 * The connected status flag
 	 */
 	private final static byte[] STATUS_CONNECTED=new byte[] {0x00};
@@ -60,9 +70,15 @@ public class SerialSensorControl implements SensorControl {
 	/**
 	 * Raw buffer for message out.  
 	 */
-	private int[] messageOut = new int[255]; 
+	private int[] messageOut = new int[255];
+
+	/**
+	 * Reference to the main controller. 
+	 */
+	private SensorsControl sensorsControl; 
 	
-	public SerialSensorControl(){
+	public SerialSensorControl(SensorsControl sensorsControl){
+		this.sensorsControl=sensorsControl; 
 		params= new SerialParams();
 		serialComms= new SerialComms(); 
 		serialMessageParser= new SerialMessageParser(this);
@@ -82,6 +98,7 @@ public class SerialSensorControl implements SensorControl {
 		Thread th = new Thread(serialTask);
 		th.setDaemon(true);
 		th.start();
+	
 	}
 	
 	/**
@@ -89,8 +106,11 @@ public class SerialSensorControl implements SensorControl {
 	 * @return true if the serial port is open and sending data. 
 	 */
 	public boolean isSerialRunning() {
+		//System.out.println("serialTask: " + serialTask + "  " + (serialTask==null?null:serialTask.isCancelled())); 
+
 		if (serialTask==null) return false; 
 		if (serialTask.isCancelled()) return false;
+
 		return true; 
 	}
 	
@@ -98,7 +118,11 @@ public class SerialSensorControl implements SensorControl {
 	 * Stop the serial port aquiring data and close the port. 
 	 */
 	public void stopSerial() {
-		serialTask.cancel(false);
+		if (serialTask!=null) {
+			this.connect=false;
+			//very important to have interrupt as false or the serial thread does not cancel and keeps reading data, 
+			serialTask.cancel(false);
+		}
 	}
 	
 	
@@ -188,9 +212,16 @@ public class SerialSensorControl implements SensorControl {
 	 * Runs the serial thread. 
 	 */
 	int count=0;
+
 	public class SerialTask extends Task<Integer> {
 
 		public SerialTask() {
+			
+		}
+
+		@Override 
+		protected Integer call() throws Exception {
+			connect= true;
 			try {
 				serialComms.initialize();
 
@@ -198,22 +229,19 @@ public class SerialSensorControl implements SensorControl {
 					//System.out.println("Add event listener;");
 					serialComms.getSerialPort().removeDataListener();
 					serialComms.getSerialPort().addDataListener(new SerialListener(serialComms));
+					notifyUpdate(SensorUpdate.SENSOR_CONNECT, SerialSensorControl.this);
 				}
 				else {
 					System.err.println("The Serial port is null");
-					return; 
+					notifyUpdate(SensorUpdate.SENSOR_STOP, SerialSensorControl.this);
+					return 0; 
 				}
 			}
 			catch (Exception e) {
 				e.printStackTrace();
-				return; 
+				return 0; 
 			}
-		}
-
-		@Override 
-		protected Integer call() throws Exception {
-
-
+			
 			while (connect==true && !isCancelled()){
 				Thread.sleep(500);
 				//write a byte to the output stream - this allows the 
@@ -229,6 +257,7 @@ public class SerialSensorControl implements SensorControl {
 			serialComms.getSerialPort().closePort();
 			return 0;
 		}
+		
 
 	}
 
@@ -270,12 +299,26 @@ public class SerialSensorControl implements SensorControl {
 	 * @param the command to send. 
 	 */
 	public void sendMessage(XsMessageID value, int[] data) {
-    	XBusMessage mtest = new XBusMessage(); 
+		if (value == XsMessageID.XMID_SetRTCTime) {
+			sendTimeMessage();
+		}
+		else {
+			sendXMIDMessage(value, data); 
+		}
+	}
+	
+	
+	private void sendXMIDMessage(XsMessageID value, int[] data) {
+		XBusMessage mtest = new XBusMessage(); 
     	//mtest.mid=XMID_GotoMeasurement;
     	mtest.mid=value;
     	mtest.charBufferRx=data;
+    	mtest.len = data.length;
+
     	sendMessage(mtest);  
 	}
+	
+	
 
 
 	@Override
@@ -287,17 +330,119 @@ public class SerialSensorControl implements SensorControl {
 	@Override
 	public void sendMessage(XBusMessage message) {
 		int len = XSensMessage.XbusMessage_format(messageOut,  message);
-    	
+	
     	//now need to send the message
     	try {
     		System.out.println(serialComms.getOutputStream());
 			serialComms.getOutputStream().write(XSensMessage.raw2Bytes(messageOut), 0, len);
+			
+//			System.out.println("----Raw bytes sent----");
+//			for (int i=0; i<XSensMessage.raw2Bytes(messageOut).length; i++) {
+//				System.out.print(XSensMessage.raw2Bytes(messageOut)[i] + " ");
+//			}
+			System.out.println();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     	
 	}
+
+	/**
+	 * Send the current data time message
+	 */
+	public void sendTimeMessage() {
+		
+		//what is the current time
+		long currentTime = System.currentTimeMillis(); 
+		
+		Date date = new Date(currentTime);
+		DateFormat formatter = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss.SSS");
+		formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+		
+		String timeS = formatter.format(date);
+		
+		System.out.println(timeS);
+		//convert thre string to a byte array 
+		byte[] byteArrray = timeS.getBytes();
+		
+		int[] data = new int[byteArrray.length]; 
+		for (int i=0; i<byteArrray.length; i++) {
+			data[i]=byteArrray[i];
+			System.out.print(byteArrray[i] + " ");
+		}
+		
+		
+		sendXMIDMessage(XsMessageID.XMID_SetRTCTime, data); 
+		
+	}
+	
+	public static void main(String args[]) {
+		
+		int[] messageOut = new int[255]; 
+
+		//what is the current time
+		long currentTime = System.currentTimeMillis(); 
+		
+		System.out.println("Set current time millis: "); 
+		
+		Date date = new Date(currentTime);
+		DateFormat formatter = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss.SSS");
+		formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+		
+		String timeS = formatter.format(date);
+		
+		System.out.println(timeS);
+		//convert thre string to a byte array 
+		byte[] byteArrray = timeS.getBytes();
+		
+		int[] data = new int[byteArrray.length]; 
+		for (int i=0; i<byteArrray.length; i++) {
+			data[i]=byteArrray[i];
+			//System.out.print(byteArrray[i] + " ");
+		}
+		//System.out.println("");
+		
+    	XBusMessage mtest = new XBusMessage(); 
+    	//mtest.mid=XMID_GotoMeasurement;
+    	mtest.mid=XsMessageID.XMID_SetRTCTime;
+    	mtest.charBufferRx=data;
+    	mtest.len = data.length;
+		
+		int len = XSensMessage.XbusMessage_format(messageOut,  mtest);
+		
+//		System.out.println("----Raw bytes sent----" + mtest.len);
+//		for (int i=0; i<messageOut.length; i++) {
+//			System.out.print(messageOut[i] + " ");
+//		}
+
+	}
+	
+	public boolean removeUpdateListener(SensorUpdateListener sensorUpdateListener) {
+		return updateListeners.remove(sensorUpdateListener); 
+	}
+	
+	public void addSensorUpdateListener(SensorUpdateListener sensorUpdateListener) {
+		updateListeners.add(sensorUpdateListener); 
+	}
+	
+	public void notifyUpdate(SensorUpdate sensorConnect, Object object) {
+		for (int i=0; i<this.updateListeners.size(); i++) {
+			updateListeners.get(i).notifyUpdate(sensorConnect, object); 
+		}
+	}
+
+	@Override
+	public String getSensorName() {
+		if (serialComms.getSerialPort()==null) return null; 
+		return serialComms.getSerialPort().getSystemPortPath();
+	}
+
+	@Override
+	public boolean isConnected() {
+		return this.isSerialRunning();
+	}
+
 
 
 

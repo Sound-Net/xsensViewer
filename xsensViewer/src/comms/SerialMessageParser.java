@@ -94,9 +94,26 @@ public class SerialMessageParser {
 		default:
 			break;
 		}	
+		
+		sensorData.timeMillis = parseTime(splitStirng[splitStirng.length-3], splitStirng[splitStirng.length-2]); 
+		
 		if (sensorData==null) return;
 		newMessage(sensorData);
 
+	}
+
+	/**
+	 * Parse a time string. 
+	 * @param unixTime - the unix time string (e.g. "167595504")
+	 * @param millis - a millis string between 0 and 1000 (e.g. "345")
+	 * @return the java millis time stamp. 
+	 */
+	private Long parseTime(String unixTime, String millis) {
+		long unixTimeL = Long.valueOf(unixTime.trim()); 
+		
+		int millisL = Integer.valueOf(millis.trim()); 
+
+		return unixTimeL*1000 +millisL;
 	}
 
 	/**

@@ -25,7 +25,6 @@ import layout.SensorView;
  * @author Jamie Macaulay 
  *
  */
-@SuppressWarnings("restriction")
 public class SensorMain extends Application {
 	
 //	public URL darkStyle=ClassLoader.getSystemResource("resources/jmetroDarkTheme.css");
@@ -57,13 +56,10 @@ public class SensorMain extends Application {
 
         Scene scene =  new Scene(root, 750, 550); 
         
-        
         SensorView.setTheme(scene, root); 
 
-
         primaryStage.setScene(scene);
-        
-        
+
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent t) {
@@ -73,7 +69,6 @@ public class SensorMain extends Application {
             }
         });
 
-        
 //        primaryStage.setOnShowing((event)->{
 //        	System.out.println("Hello");
 //			//create a single default tab. 
@@ -81,10 +76,15 @@ public class SensorMain extends Application {
 //        });
         
         primaryStage.show();
-        sensorView.addSensorTab(1); 
+        sensorView.addSensorTab(0); 
 
+//        Platform.runLater(()->{
+//            sensorView.getTabbedPane().layout(); 
+//        });
+        
+        //HACK -don't know why, but for some reason we need this to make sure the tab pane add button is laid out properly...
+        //It's something to do with the header area not initialising until after the tab has been added. 
+        sensorView.getTabbedPane().layout(); 
 
-        
-        
     }
 }

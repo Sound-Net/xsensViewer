@@ -3,6 +3,7 @@ package main;
 import java.util.ArrayList;
 
 import xsens.XBusMessage;
+import xsens.XsMessageID;
 
 /**
  * The main control class for the application. Each sensor has it's own controller. 
@@ -12,6 +13,14 @@ import xsens.XBusMessage;
  *
  */
 public class SensorsControl  {
+	
+	
+	public enum SensorUpdate {
+		  SENSOR_CONNECT, // the sensor has been asked to connect
+		  SENSOR_CONNECTED, // the sensor is connected
+		  SENSOR_STOP, // the sensor has been asked to stop. 
+		}
+
 	
 	private ArrayList<SensorControl> sensorControlList = new ArrayList<SensorControl>(); 
 
@@ -47,6 +56,8 @@ public class SensorsControl  {
 	public boolean removeSensorControl(SensorControl sensorControl) {
 		return sensorControlList.remove(sensorControl);
 	}
+	
+	
 
 	/**
 	 * Send a message to all active devices
@@ -58,12 +69,26 @@ public class SensorsControl  {
 	}
 
 	/**
+	 * Send a message to all active devices
+	 */
+	public void sendMessage(XsMessageID value, int[] data) {
+		for (int i=0; i< sensorControlList.size(); i++) {
+			sensorControlList.get(i).sendMessage( value, data);
+		}
+	}
+
+	/**
 	 * Stop all sensors and disconnect. 
 	 */
 	public void stop() {
 		for (int i=0; i< sensorControlList.size(); i++) {
 			sensorControlList.get(i).stop(); 
 		}
+		
+	}
+
+	public void notifyUpdate(SensorUpdate sensorConnect, Object object) {
+	
 		
 	}
 

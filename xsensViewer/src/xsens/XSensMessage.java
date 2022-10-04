@@ -17,7 +17,7 @@ public class XSensMessage {
 
 	
 	/**
-	 * Converts an array fo ints with unsigned byte values to java signed bytes
+	 * Converts an array of ints with unsigned byte values to java signed bytes
 	 * to be sent throught the serial port
 	 * @param mtest
 	 * @return
@@ -66,7 +66,7 @@ public class XSensMessage {
 	  * \brief Format the payload of a message from a native data type to
 	  * raw bytes.
 	  */
-	 static void formatPayload(int[] raw, XBusMessage message)
+	 static void formatPayload(int[] raw, XBusMessage message, int count)
 	 {
 	 	int i;
 
@@ -78,7 +78,7 @@ public class XSensMessage {
 	 	default:
 	 		for (i = 0; i < message.len; ++i)
 	 		{
-	 			raw[i] = message.charBufferRx[i];
+	 			raw[count+i] = message.charBufferRx[i];
 	 		}
 	 		break;
 	 	}
@@ -109,7 +109,6 @@ public class XSensMessage {
 		int length = messageLength(message);
 		//printf(" message length %d \n", length);
 
-
 		if (length < XBUS_EXTENDED_LENGTH)
 		{
 			raw[count] = length;
@@ -129,7 +128,9 @@ public class XSensMessage {
 			checksum -= raw[count++]; 
 		}
 
-		formatPayload(raw, message);
+
+		formatPayload(raw, message, count);
+		
 		int i;
 		for (i = 0; i < length; ++i)
 		{

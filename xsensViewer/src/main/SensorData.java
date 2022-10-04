@@ -14,9 +14,36 @@ public class SensorData {
 	 * The data type. 
 	 */
 	public DataTypes flag;
+	
+	
+	/**
+	 * Constructor for sensor data from a sensor. 
+	 * 
+	 * @param angles - angles. length of 3 is Euler angles in degrees. Length of 4 is a quaternion. 
+	 */
+	public SensorData(long timemillis, double[] data, DataTypes flag) {
+		this.flag=flag; 
+		if (flag==DataTypes.EULAR_ANGLES) eularAngles=data; 
+		if (flag==DataTypes.QUATERNION) quaternion=data; 
+		if (flag==DataTypes.LIGHT_SPECTRUM) lightSpectrum=data; 
+		if (flag==DataTypes.TEMPERATURE) temperature=data[0]; 
+		if (flag==DataTypes.RGBDATA) lightSpectrum=data; 
+		if (flag==DataTypes.PRESSURE_TEMPERATURE) {
+			this.pressure=data[0];
+			this.temperature=data[1]; 
+		}
+		if (flag==DataTypes.BATTERYDATA) {
+			this.batteryLevel=data[0]; 
+			this.batteryLevelV=data[1]; 
+		}
+		if (flag==DataTypes.SD_USED_SPACE) sdUsedSpace = data; 
+		
+		this.timeMillis = timemillis;
+
+	}
 
 	/**
-	 * Constructor for angles. 
+	 * Constructor for sensor data from a sensor. 
 	 * 
 	 * @param angles - angles. length of 3 is Euler angles in degrees. Length of 4 is a quaternion. 
 	 */
@@ -117,7 +144,12 @@ public class SensorData {
 	 * The currently used space.
 	 * sdUsedSpace[0] = space used sdUsedSpace[1] = SD card size.  
 	 */
-	public double[] sdUsedSpace; 
+	public double[] sdUsedSpace;
+
+	/**
+	 * The time in Java millis. 
+	 */
+	public Long timeMillis; 
 	
 
 

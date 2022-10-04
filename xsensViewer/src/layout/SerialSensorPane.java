@@ -1,6 +1,11 @@
 package layout;
 
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone; 
+
 import comms.SerialMessageParser.DataTypes;
 import comms.SerialUtils;
 import javafx.geometry.Insets;
@@ -15,11 +20,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import main.SerialSensorControl;
 import xsens.XsMessageID;
 import main.SensorData;
+import main.SensorsControl.SensorUpdate;
 
 /**
  * The main view.
@@ -79,28 +83,51 @@ public class SerialSensorPane extends BorderPane {
 	/**
 	 * Pane which sends commands to the sensor package. 
 	 */
-	private CommandPane commandPane;
+	private XmidCommandPane commandPane;
 
 	private Label sdLabel;
 
+	private Label timeLabel;
+
+	/**
+	 * The default width for buttons to make things consistent. 
+	 */
+	private double BUTTON_WIDTH = 80; 
+
 	public SerialSensorPane(SerialSensorControl sensorControl){
+		
+		
 		this.sensorControl=sensorControl; 
 
 		VBox leftHolder = new VBox(); 
 		leftHolder.setSpacing(5);
 		leftHolder.setPrefWidth(250);
+		leftHolder.setPadding(new Insets(5,5,5,5));
+		
+		Label connectLabel = new  Label("Connect Sensor"); 
+		SensorView.titlelabel(connectLabel);
+		leftHolder.getChildren().addAll(connectLabel); 
 
 		leftHolder.getChildren().add(serialCommPane=new SerialCommPane());
 		serialCommPane.setParams(sensorControl.getParams());
 
 		leftHolder.getChildren().addAll(createConnectPane()); 
 
-		//leftHolder.getChildren().addAll(createDataTypePane()); 
+		//leftHolder.getChildren().addAll(createDataTypePane());;
+		
+		Label sensorLabel = new  Label("Sensor Data"); 
+		sensorLabel.setPadding(new Insets(10,0,0,0));
+		SensorView.titlelabel(sensorLabel);
+		leftHolder.getChildren().addAll(sensorLabel); 
 
 		leftHolder.getChildren().addAll(createDataPane()); 
 		
-		leftHolder.getChildren().add(new Label("Advanced Commands")); 
-		leftHolder.getChildren().add(this.commandPane = new CommandPane(sensorControl)); 
+		Label advLabel = new  Label("Advanced Commands"); 
+		advLabel.setPadding(new Insets(10,0,0,0));
+		SensorView.titlelabel(advLabel);
+		leftHolder.getChildren().add(advLabel); 
+
+		leftHolder.getChildren().add(this.commandPane = new XmidCommandPane(sensorControl)); 
 
 		sensorControl.addSensorMessageListener((sensormessage)->{
 			setEulerData(sensormessage);
@@ -119,6 +146,8 @@ public class SerialSensorPane extends BorderPane {
 		this.setCenter(holderPane);
 		this.setLeft(leftHolder);
 	}
+
+
 
 
 
@@ -174,27 +203,44 @@ public class SerialSensorPane extends BorderPane {
 
 		startButton = new Button("Connect"); 
 		startButton.setOnAction((action)->{
+			
 			if (sensorControl.isSerialRunning()) {
+		
+				//STOP
 				sensorControl.stopSerial();
+				
+				//need to give the thread just a little time to cancel so everything else works. 
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} 
 				setDataLabelsNull();
+				sensorControl.notifyUpdate(SensorUpdate.SENSOR_STOP,null); 
+				serialCommPane.setDisable(false);
 			}
 			else {
+				//START
 				sensorControl.setParams(serialCommPane.getParams(this.sensorControl.getParams())); 
 				sensorControl.startSerial();
+				sensorControl.notifyUpdate(SensorUpdate.SENSOR_CONNECT,null); 
+				serialCommPane.setDisable(true);
 			}
+			
 			updateStartButtonLabel(); 
 		});
 
 
-		Button stopButton = new Button("Deploy"); 
-		stopButton.setOnAction((action)->{
+		Button deployButton = new Button("Deploy"); 
+		deployButton.setOnAction((action)->{
 			sensorControl.deploy(); 
 			updateStartButtonLabel(); 
 			setDataLabelsNull(); 
 		}); 
 
 		buttonHolder.getChildren().addAll( 
-				startButton, stopButton); 
+				startButton, deployButton); 
 
 
 		VBox vBox = new VBox(); 
@@ -208,6 +254,7 @@ public class SerialSensorPane extends BorderPane {
 	 * Update the label on the settings button. 
 	 */
 	private void updateStartButtonLabel() {
+		//System.out.println("isSerialRunning: " + sensorControl.isSerialRunning());
 		if (sensorControl.isSerialRunning()) {
 			startButton.setText("Stop");
 		}
@@ -224,37 +271,61 @@ public class SerialSensorPane extends BorderPane {
 
 		VBox dataPane= new VBox(); 
 		dataPane.setSpacing(5); 
+		
+		
+		BorderPane timeBox = new BorderPane(); 
+		//timeBox.setSpacing(10);
+		Label sensorTimelabel = new Label("Sensor time ");
+		timeBox.setLeft(setLabelFontBold(sensorTimelabel)); 
+		
+		Button setTimeButton = new Button("Set"); 
+		setTimeButton.setPrefWidth(BUTTON_WIDTH);
+		setTimeButton.setOnAction((action)->{
+			sensorControl.sendTimeMessage(); 
+		});
+		timeBox.setRight(setTimeButton); 
+		//timeBox.setAlignment(Pos.CENTER_LEFT);
+		BorderPane.setAlignment(sensorTimelabel, Pos.CENTER_LEFT);
+		
+		dataPane.getChildren().add(timeBox); 
+		dataPane.getChildren().add(timeLabel= new Label("-")); 
+		
+		
 
-		dataPane.getChildren().add(setLabelFontBold(new Label("Orientation: "))); 
+		dataPane.getChildren().add(setLabelFontBold(new Label("Orientation "))); 
 		dataPane.getChildren().add(orientationLabel= new Label("-")); 
 
-		dataPane.getChildren().add(setLabelFontBold(new Label("Pressure: "))); 
+		dataPane.getChildren().add(setLabelFontBold(new Label("Pressure "))); 
 		dataPane.getChildren().add(pressureLabel= new Label("-")); 
 
-		dataPane.getChildren().add(setLabelFontBold(new Label("Temperature: "))); 
+		dataPane.getChildren().add(setLabelFontBold(new Label("Temperature "))); 
 		dataPane.getChildren().add(tempLabel= new Label("-")); 
 
-		dataPane.getChildren().add(setLabelFontBold(new Label("Light: "))); 
+		dataPane.getChildren().add(setLabelFontBold(new Label("Light "))); 
 		dataPane.getChildren().add(RGBLabel= new Label("-")); 
 
-		dataPane.getChildren().add(setLabelFontBold(new Label("Battery: "))); 
+		dataPane.getChildren().add(setLabelFontBold(new Label("Battery "))); 
 		dataPane.getChildren().add(batLabel= new Label("-")); 
 		
 
-		
-		dataPane.getChildren().add(setLabelFontBold(new Label("SD card: "))); 
-		
-		HBox sdBox = new HBox(); 
-		sdBox.setSpacing(5);
-		sdBox.getChildren().add(sdLabel= new Label("-")); 
+	
+		BorderPane sdBox = new BorderPane(); 
+		//sdBox.setSpacing(10);
+		Label sdCardLabel = new Label("SD card: "); 
+		sdBox.setLeft(setLabelFontBold(sdCardLabel)); 
 		
 		Button eraseButton = new Button("Erase"); 
+		eraseButton.setPrefWidth(BUTTON_WIDTH);
 		eraseButton.setOnAction((action)->{
 			sensorControl.sendMessage(XsMessageID.XMID_ReqSDFormat); 
 		});
-		sdBox.getChildren().add(eraseButton); 
+		sdBox.setRight(eraseButton); 
+		BorderPane.setAlignment(sdBox, Pos.CENTER_LEFT);
 
 		dataPane.getChildren().add(sdBox); 
+		
+		dataPane.getChildren().add(sdLabel= new Label("-")); 
+
 
 		return dataPane; 
 
@@ -267,10 +338,10 @@ public class SerialSensorPane extends BorderPane {
 	 */
 	private Label setLabelFontBold(Label label) {
 		//FIXME
-		//label.setFont(Font.font("Verdanna", FontWeight.BOLD, 16));
+		//label.setFont(Font.font("Sergio", FontWeight.BOLD, 16));
+		//label.setStyle("-fx-font-weight: bold");
 		return label; 
 	}
-
 
 	/**
 	 * Set the label showing euler data on the 3D display
@@ -307,6 +378,13 @@ public class SerialSensorPane extends BorderPane {
 	 */
 	public void setDataLabelData(SensorData sensormessage){
 		
+		
+		if (sensormessage.timeMillis!=null) {
+			Date date = new Date(sensormessage.timeMillis);
+			DateFormat formatter = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss.SSS");
+			formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+			timeLabel.setText(formatter.format(date));
+		}
 
 		//check if tyhere is orientation data
 		if (sensormessage.eularAngles!=null){
@@ -344,13 +422,13 @@ public class SerialSensorPane extends BorderPane {
 		if (sensormessage.batteryLevel!=null) {
 			double batteryLevel=sensormessage.batteryLevel; 
 			
-			System.out.println("Battary level: " + sensormessage.batteryLevel + "  " + sensormessage.batteryLevelV);
+			//System.out.println("Battary level: " + sensormessage.batteryLevel + "  " + sensormessage.batteryLevelV);
 			if (batteryLevel>98); batteryLevel=100; 
 			batLabel.setText(String.format("%.2f ", batteryLevel) + "%: " + String.format("%.2fV", sensormessage.batteryLevelV));
 		}
 		
 		if (sensormessage.sdUsedSpace!=null) {
-			sdLabel.setText(String.format("%.1f of %.1f GB (%.1f%%) ", sensormessage.sdUsedSpace[0]/1000,  sensormessage.sdUsedSpace[1]/1000,  100*sensormessage.sdUsedSpace[0]/sensormessage.sdUsedSpace[1]));
+			sdLabel.setText(String.format("%.3f of %.1f GB (%.2f%%) ", sensormessage.sdUsedSpace[0]/1000,  sensormessage.sdUsedSpace[1]/1000,  100*sensormessage.sdUsedSpace[0]/sensormessage.sdUsedSpace[1]));
 		}
 		
 		if (sensormessage.flag == DataTypes.MTMESSAGE) {

@@ -1,6 +1,7 @@
 package main;
 
 import xsens.XBusMessage;
+import xsens.XsMessageID;
 
 /**
  * Basic interface for sensor control. 
@@ -8,7 +9,19 @@ import xsens.XBusMessage;
  *
  */
 public interface SensorControl {
-
+	
+	/**
+	 * Get the name of the sensor. 
+	 * @return the name of the sensor. 
+	 */
+	public String getSensorName(); 
+	
+	
+	/**
+	 * Stop the sensor. Called whenever the application closes. 
+	 */
+	public boolean isConnected(); 
+	
 	/**
 	 * Stop the sensor. Called whenever the application closes. 
 	 */
@@ -19,5 +32,8 @@ public interface SensorControl {
 	 * @param message - the message to send. 
 	 */
 	public void sendMessage(XBusMessage message);
+	
+	public void sendMessage(XsMessageID value, int[] data);
+	
 
 }

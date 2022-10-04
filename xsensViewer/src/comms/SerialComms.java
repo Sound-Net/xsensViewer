@@ -1,6 +1,7 @@
 package comms;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Enumeration;
@@ -26,7 +27,7 @@ public class SerialComms implements SerialPortDataListener {
 	/**
 	 * The current port name; 
 	 */
-	String portName = "cu.usbmodem14201"; 
+	String portName = "cu.usbmodem14101"; 
 
 	private BufferedReader input;
 	private OutputStream output;
@@ -122,19 +123,33 @@ public class SerialComms implements SerialPortDataListener {
 		
 		Thread t=new Thread() {
 			public void run() {
+				while (true) {
 				//the following line will keep this app alive for 1000    seconds,
 				//waiting for events to occur and responding to them    (printing incoming messages to console).
-				try {Thread.sleep(1000000);} catch (InterruptedException    ie) {}
+				try {Thread.sleep(100);} catch (InterruptedException    ie) {}
+				
+				try {
+					main.getOutputStream().write(10);
+					main.getOutputStream().write(35);
+					main.getOutputStream().write(43);
+					main.getOutputStream().write(120);
+
+
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				}
 			}
 		};
 		t.start();
 		System.out.println("Started");
-		
 	}
 
 
 	/**
-	 * Get the bufferred reader for the setrial stream. 
+	 * Get the buffered reader for the serial stream. 
 	 * @return the bufferrred reader.
 	 */
 	public BufferedReader getBufferredInput() {

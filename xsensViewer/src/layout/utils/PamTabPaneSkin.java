@@ -116,7 +116,6 @@ public class PamTabPaneSkin extends TabPaneSkin {
 	 * Set the add button in the correct position
 	 */
 	private void layoutAddButton(){
-		
 			//need to careful here. The width and height of the tab pane don'tr swap on rotation i.e. width of pane remains the axis on which tabs are added. 
 			//Weird but guess the java people decided that would make programming easier. 
 			double insetx=0.; 
@@ -124,6 +123,7 @@ public class PamTabPaneSkin extends TabPaneSkin {
 				addTabButton.layoutXProperty().setValue(tabContentArea.getWidth()+insetx+headerArea.getPadding().getLeft()+addButtonInsets);
 				addTabButton.layoutYProperty().setValue(headerArea.getHeight()-tabContentArea.getHeight()+addButtonInsets);
 				addTabButton.resize(tabContentArea.getHeight()-4, tabContentArea.getHeight()-addButtonInsets*2);	
+//				System.out.println("addTabButton.layoutYProperty(): " +addTabButton.layoutYProperty() + "  " + headerArea.getHeight() +  " "  + tabContentArea.getHeight() + "   " +addButtonInsets); 
 			}
 			else{
 				//yep, this makes no sense but works when tabs are vertical. 
@@ -131,9 +131,7 @@ public class PamTabPaneSkin extends TabPaneSkin {
 				addTabButton.layoutYProperty().setValue(headerArea.getHeight()-tabContentArea.getHeight());
 				addTabButton.resize(tabContentArea.getHeight(),tabContentArea.getHeight());	
 			}
-			
 //			System.out.println("tab Content area width: " +tabContentArea.getWidth()+" tab Content area height: "+tabContentArea.getHeight()+ " addTabButton.layoutYProperty()" +addTabButton.layoutYProperty().getValue());
-
 	}
 
 	@Override 
@@ -209,7 +207,7 @@ public class PamTabPaneSkin extends TabPaneSkin {
 		//layout button which adds a new tab			
 		if (pamTabPane.isAddTabButton()) layoutAddButton();
 
-		//System.out.println("Hello "+hello.getWidth()+" "+headerArea.getWidth()+ "  "+tabContentArea.getWidth());	 
+//		System.out.println("Hello:: layout tab pane done");	 
 
 	}
 	

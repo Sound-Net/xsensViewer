@@ -1,6 +1,7 @@
 package layout;
 
 import main.SensorsControl;
+import main.SensorsControl.SensorUpdate;
 import main.SerialSensorControl;
 import javafx.scene.layout.BorderPane;
 import jfxtras.styles.jmetro.JMetro;
@@ -8,9 +9,10 @@ import jfxtras.styles.jmetro.JMetroStyleClass;
 import jfxtras.styles.jmetro.MDL2IconFont;
 import jfxtras.styles.jmetro.Style;
 import layout.utils.PamTabFX;
-import layout.utils.PamTabPane; 
+import layout.utils.PamTabPane;
 import javafx.geometry.*;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 
 
@@ -48,13 +50,12 @@ public class SensorView extends BorderPane {
 		
 		tabPane.getAddTabButton().setGraphic(iconFont1);
 		tabPane.getAddTabButton().setPrefWidth(90);
-        addSensorTab(0); 
+        //addSensorTab(0); 
+	
 
-		
 		tabPane.layout();
 		
-		
-	
+			
 	}
 	
 	
@@ -67,7 +68,13 @@ public class SensorView extends BorderPane {
 		PamTabFX pamTabFX = new PamTabFX(("Sensor " + nTabs)); 
 		
 		//TODO - may need option to add another type pof communication e.g.. USB in future. 
-		pamTabFX.setContent(new SerialSensorPane(new SerialSensorControl()));
+		SerialSensorControl asensorControl; 
+		pamTabFX.setContent(new SerialSensorPane(asensorControl = new SerialSensorControl(sensorControl)));
+		
+		asensorControl.addSensorUpdateListener((sensorUpdate, dataObject)->{
+			sensorControl.notifyUpdate(sensorUpdate, dataObject); 
+			notifyUpdate(sensorUpdate, dataObject); 
+		});
 		
 		pamTabFX.setDetachable(true);
 		if (nTabs <= 1) {
@@ -75,6 +82,23 @@ public class SensorView extends BorderPane {
 		}
 		
 		tabPane.getTabs().add(pamTabFX); 
+		sensorControl.addSensorControl(asensorControl);
+		
+		pamTabFX.setOnClosed((value)->{
+			sensorControl.removeSensorControl(asensorControl);
+		});
+	}
+	
+
+	/**
+	 * Remove a sensor tab- this also closes the sensor associated with the tab. 
+	 * @param i - the tab ID to remove. 
+	 */
+	public void removeSensorTab(int i) {
+		sensorControl.notifyUpdate(SensorUpdate.SENSOR_STOP, ((SensorTab) tabPane.getTabs().get(i)).getSensorControl()); 
+		((SensorTab) tabPane.getTabs().get(i)).getSensorControl().stop();
+		
+		tabPane.getTabs().remove(i);
 	}
 	
 	public class SensorTab extends PamTabFX {
@@ -84,6 +108,10 @@ public class SensorView extends BorderPane {
 		 */
 		private SerialSensorControl sensorControl;
 		
+		public SerialSensorControl getSensorControl() {
+			return sensorControl;
+		}
+
 		/**
 		 * The serial sensor pane
 		 */
@@ -92,7 +120,7 @@ public class SensorView extends BorderPane {
 		public SensorTab(String name, SerialSensorControl sensorControl) {
 			super(name);
 			this.sensorControl = sensorControl; 
-			this.setContent(serialSensorPane = new SerialSensorPane(new SerialSensorControl()));
+			this.setContent(serialSensorPane = new SerialSensorPane(sensorControl));
 		}
 		
 	}
@@ -106,5 +134,23 @@ public class SensorView extends BorderPane {
 		jMetro.setScene(scene);
 		root.getStyleClass().add(JMetroStyleClass.BACKGROUND);
 	}
+	
+	public static Label titlelabel(Label label) {
+		label.setStyle("-fx-font-weight: bold; -fx-font-size: 16px");
+
+		return label; 
+	}
+
+	
+	/**
+	 * Called whenever there is an update from one of the sensor panes. 
+	 * @param sensorUpdate - the sensor update
+	 * @param dataObject the data associated with the update. 
+	 */
+	private void notifyUpdate(SensorUpdate sensorUpdate, Object dataObject) {
+		masterCommPane.notifyUpdate(sensorUpdate, dataObject); 
+		
+	}
+
 
 }
