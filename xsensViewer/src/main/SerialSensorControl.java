@@ -153,7 +153,7 @@ public class SerialSensorControl implements SensorControl {
 	}
 
     /**
-     * Called whenever a new message is recieved from the device. 
+     * Called whenever a new message is received from the device. 
      * @param sensorComms - the sensor message
      */
 	public void newMessage(SensorData sensorComms) {
@@ -246,11 +246,17 @@ public class SerialSensorControl implements SensorControl {
 				Thread.sleep(500);
 				//write a byte to the output stream - this allows the 
 				//device to recieve a few bytes of serial data and know it's connected to the PC. 
-				count++;
 				if (count%6==0) {
-					System.out.println("Send output stream: " + isCancelled());
+					//System.out.println("Send output stream: " + isCancelled());
 					serialComms.getOutputStream().write(STATUS_CONNECTED);
 				}
+				
+				if (count==0) {
+					sendMessage(XsMessageID.XMID_ReqSDSize);
+				}
+				
+				count++;
+
 			}
 
 			serialComms.close();
@@ -357,12 +363,12 @@ public class SerialSensorControl implements SensorControl {
 		long currentTime = System.currentTimeMillis(); 
 		
 		Date date = new Date(currentTime);
-		DateFormat formatter = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss.SSS");
+		DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS");
 		formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 		
 		String timeS = formatter.format(date);
 		
-		System.out.println(timeS);
+		System.out.println("Send time to device: " + timeS);
 		//convert thre string to a byte array 
 		byte[] byteArrray = timeS.getBytes();
 		

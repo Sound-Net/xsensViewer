@@ -20,6 +20,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import jfxtras.styles.jmetro.MDL2IconFont;
 import main.SerialSensorControl;
 import xsens.XsMessageID;
 import main.SensorData;
@@ -319,7 +320,21 @@ public class SerialSensorPane extends BorderPane {
 		eraseButton.setOnAction((action)->{
 			sensorControl.sendMessage(XsMessageID.XMID_ReqSDFormat); 
 		});
-		sdBox.setRight(eraseButton); 
+		
+		MDL2IconFont iconFont1 = new MDL2IconFont("\uE72C");
+		Button refreshbutton = new Button(""); 
+		refreshbutton.setGraphic(iconFont1);
+		//refreshbutton.setPrefWidth(BUTTON_WIDTH);
+		refreshbutton.setOnAction((action)->{
+			sensorControl.sendMessage(XsMessageID.XMID_ReqSDSize); 
+		});
+		
+		HBox buttonBox = new HBox(); 
+		buttonBox.setSpacing(5);
+		buttonBox.getChildren().addAll(refreshbutton, eraseButton); 
+		buttonBox.setAlignment(Pos.CENTER_LEFT);
+		
+		sdBox.setRight(buttonBox); 
 		BorderPane.setAlignment(sdBox, Pos.CENTER_LEFT);
 
 		dataPane.getChildren().add(sdBox); 
@@ -381,7 +396,7 @@ public class SerialSensorPane extends BorderPane {
 		
 		if (sensormessage.timeMillis!=null) {
 			Date date = new Date(sensormessage.timeMillis);
-			DateFormat formatter = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss.SSS");
+			DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS");
 			formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 			timeLabel.setText(formatter.format(date));
 		}
