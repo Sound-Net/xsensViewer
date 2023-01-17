@@ -1,5 +1,6 @@
 package main;
 
+import layout.SensorMessageListener;
 import xsens.XBusMessage;
 import xsens.XsMessageID;
 
@@ -34,6 +35,10 @@ public interface SensorControl {
 	public void sendMessage(XBusMessage message);
 	
 	public void sendMessage(XsMessageID value, int[] data);
+	
+	public void addSensorMessageListener(SensorMessageListener sensorMessageListener);
+
+	public boolean removeSensorMessageListener(SensorMessageListener sensorMessageListener);
 	
 
 }

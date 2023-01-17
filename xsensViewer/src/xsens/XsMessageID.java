@@ -32,8 +32,9 @@ public enum XsMessageID  {
 	XMID_ReqFilterProfile (0x64),
 	XMID_ReqFilterProfileAck (0x65), 
 	XMID_SetRTCTime (0x66), 
-	XMID_ReqSDFormat(0x67), 
-	XMID_ReqSDSize(0x68); 
+	XMID_ReqRTCTime (0x67), 
+	XMID_ReqSDFormat(0x68), 
+	XMID_ReqSDSize(0x69); 
 
 	/**
 	 * The unsigned byte value represented as an int. 

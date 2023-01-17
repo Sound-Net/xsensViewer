@@ -2,6 +2,12 @@ package comms;
 
 import main.SerialSensorControl;
 import main.SensorData;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+
 import javafx.application.Platform;
 
 /**
@@ -13,7 +19,7 @@ public class SerialMessageParser {
 
 	
 	public enum DataTypes {
-		EULAR_ANGLES, QUATERNION, PRESSURE_TEMPERATURE, BATTERYDATA, RGBDATA, MTDATA, MTMESSAGE, TEMPERATURE, LIGHT_SPECTRUM, SD_USED_SPACE, NO_DATA
+		EULAR_ANGLES, QUATERNION, PRESSURE_TEMPERATURE, BATTERYDATA, RGBDATA, MTDATA, MTMESSAGE, TEMPERATURE, LIGHT_SPECTRUM, SD_USED_SPACE, NO_DATA, RTC
 	}
 
 			
@@ -27,14 +33,30 @@ public class SerialMessageParser {
 	public SerialMessageParser(SerialSensorControl sensorControl){
 		this.sensorControl=sensorControl;
 	}
+	
+	int count =1; 
 
 	/**
 	 * Parse the incoming data. 
 	 * @param line - the incoming serial line
 	 */
 	public void parseLine(String dataLine){
-		//First - is there a time? 
 		
+//		System.out.println(dataLine);
+//		if (dataLine.toLowerCase().contains("time")){
+//			System.out.print(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS"))+ " -- ");
+//			System.out.println( " " +dataLine);
+//			count =1; 
+//		} 
+//		else if (count>0){
+//			System.out.print(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS"))+ " -- ");
+//			System.out.println(dataLine);
+//			count=0;
+//		}
+		
+		
+		//First - is there a time? 
+	
 		String[] splitStirng = dataLine.split(":");
 		
 	
@@ -91,11 +113,21 @@ public class SerialMessageParser {
 		case MTDATA:
 			//northing
 			break;
+		case RTC:
+			sensorData = new SensorData(null); 
+			sensorData.flag = DataTypes.RTC;
+			break; 
 		default:
 			break;
 		}	
 		
-		sensorData.timeMillis = parseTime(splitStirng[splitStirng.length-3], splitStirng[splitStirng.length-2]); 
+		sensorData.setTimeMillis(parseTime(splitStirng[splitStirng.length-3], splitStirng[splitStirng.length-2])); 
+		
+		sensorData.setSensorName(sensorControl.getSensorName()); 
+		
+//		System.out.print(sensorControl.getSensorName() + "  " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS"))+ " -- ");
+//		System.out.println(LocalDateTime.ofInstant(Instant.ofEpochMilli (sensorData.timeMillis ),  ZoneOffset.UTC ).format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS"))+ " -- ");
+
 		
 		if (sensorData==null) return;
 		newMessage(sensorData);
@@ -170,6 +202,9 @@ public class SerialMessageParser {
 		}
 		if (ary[0].trim().equals("ND")) {
 			flag=DataTypes.NO_DATA; 
+		}
+		if (ary[0].trim().equals("RTC")) {
+			flag=DataTypes.RTC; 
 		}
 		
 		return flag; 

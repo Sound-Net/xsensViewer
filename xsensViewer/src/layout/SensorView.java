@@ -13,6 +13,7 @@ import layout.utils.PamTabPane;
 import javafx.geometry.*;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.control.SplitPane;
 import javafx.scene.layout.Pane;
 
 
@@ -38,8 +39,13 @@ public class SensorView extends BorderPane {
 	
 		
 		tabPane = new PamTabPane(Side.TOP);
-		this.setCenter(tabPane);
-		this.setRight(masterCommPane = new MasterCommPane(sensorControl));
+		
+		SplitPane splitPane = new SplitPane(); 
+        splitPane.getItems().addAll(tabPane, masterCommPane = new MasterCommPane(sensorControl));
+        splitPane.setDividerPosition(0, 0.8);
+		
+		this.setCenter(splitPane);
+//		this.setRight(masterCommPane = new MasterCommPane(sensorControl));
 
 		
 		tabPane.getAddTabButton().setOnAction((value)->{

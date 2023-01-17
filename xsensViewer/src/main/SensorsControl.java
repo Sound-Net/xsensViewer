@@ -2,6 +2,7 @@ package main;
 
 import java.util.ArrayList;
 
+import layout.SensorMessageListener;
 import xsens.XBusMessage;
 import xsens.XsMessageID;
 
@@ -88,8 +89,32 @@ public class SensorsControl  {
 	}
 
 	public void notifyUpdate(SensorUpdate sensorConnect, Object object) {
-	
 		
 	}
+	
+	/**
+	 * Add a sensor message listener to all sensor controls
+	 * @param sensorMessageListener - the sensor message listener to add. 
+	 */
+	public void addSensorsMessageListener(SensorMessageListener sensorMessageListener) {
+		for (int i=0; i< sensorControlList.size(); i++) {
+			sensorControlList.get(i).addSensorMessageListener(sensorMessageListener);
+		}
+	}
+
+
+
+
+	public void removeSensorMessageListener(SensorMessageListener sensorMessageListener) {
+		for (int i=0; i< sensorControlList.size(); i++) {
+			sensorControlList.get(i).removeSensorMessageListener(sensorMessageListener);
+		}
+		
+	}
+	
+	
+	
+
+
 
 }

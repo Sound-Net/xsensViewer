@@ -1,6 +1,9 @@
 package main;
 
 import comms.SerialMessageParser.DataTypes;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.SimpleStringProperty;
 
 /**
  * Holds sensor data. Orientation data and depth data. 
@@ -22,24 +25,8 @@ public class SensorData {
 	 * @param angles - angles. length of 3 is Euler angles in degrees. Length of 4 is a quaternion. 
 	 */
 	public SensorData(long timemillis, double[] data, DataTypes flag) {
-		this.flag=flag; 
-		if (flag==DataTypes.EULAR_ANGLES) eularAngles=data; 
-		if (flag==DataTypes.QUATERNION) quaternion=data; 
-		if (flag==DataTypes.LIGHT_SPECTRUM) lightSpectrum=data; 
-		if (flag==DataTypes.TEMPERATURE) temperature=data[0]; 
-		if (flag==DataTypes.RGBDATA) lightSpectrum=data; 
-		if (flag==DataTypes.PRESSURE_TEMPERATURE) {
-			this.pressure=data[0];
-			this.temperature=data[1]; 
-		}
-		if (flag==DataTypes.BATTERYDATA) {
-			this.batteryLevel=data[0]; 
-			this.batteryLevelV=data[1]; 
-		}
-		if (flag==DataTypes.SD_USED_SPACE) sdUsedSpace = data; 
-		
-		this.timeMillis = timemillis;
-
+		this(data, flag);
+		this.timeMillis = new SimpleLongProperty(timemillis);
 	}
 
 	/**
@@ -52,18 +39,18 @@ public class SensorData {
 		if (flag==DataTypes.EULAR_ANGLES) eularAngles=data; 
 		if (flag==DataTypes.QUATERNION) quaternion=data; 
 		if (flag==DataTypes.LIGHT_SPECTRUM) lightSpectrum=data; 
-		if (flag==DataTypes.TEMPERATURE) temperature=data[0]; 
+		if (flag==DataTypes.TEMPERATURE) temperature=new SimpleDoubleProperty(data[0]); 
 		if (flag==DataTypes.RGBDATA) lightSpectrum=data; 
 		if (flag==DataTypes.PRESSURE_TEMPERATURE) {
-			this.pressure=data[0];
-			this.temperature=data[1]; 
+			this.pressure=new SimpleDoubleProperty(data[0]);
+			this.temperature=new SimpleDoubleProperty(data[1]); 
 		}
 		if (flag==DataTypes.BATTERYDATA) {
-			this.batteryLevel=data[0]; 
-			this.batteryLevelV=data[1]; 
+			this.batteryLevel=new SimpleDoubleProperty(data[0]); 
+			this.batteryLevelV=new SimpleDoubleProperty(data[1]); 
 		}
 		if (flag==DataTypes.SD_USED_SPACE) sdUsedSpace = data; 
-
+		this.pcMillis = new SimpleLongProperty(System.currentTimeMillis());
 	}
 	
 	/**
@@ -73,6 +60,7 @@ public class SensorData {
 	public SensorData(int[] outArray) {
 		this.flag=DataTypes.MTMESSAGE; 
 		this.mtMessage=outArray; 
+		this.pcMillis = new SimpleLongProperty(System.currentTimeMillis());
 	}
 	
 //	/**
@@ -122,23 +110,23 @@ public class SensorData {
 	/**
 	 * Pressure in mbar.
 	 */
-	public Double pressure; 
+	public SimpleDoubleProperty pressure; 
 	
 	/**
 	 * The temperature in celsius. 
 	 */
-	public Double temperature; 
+	public SimpleDoubleProperty temperature; 
 	
 	/**
 	 * The battery level in %. 
 	 */
-	public Double batteryLevel; 
+	public SimpleDoubleProperty batteryLevel; 
 	
 	
 	/**
 	 * The battery level in volts.
 	 */
-	public Double batteryLevelV;
+	public SimpleDoubleProperty batteryLevelV;
 
 	/**
 	 * The currently used space.
@@ -149,7 +137,36 @@ public class SensorData {
 	/**
 	 * The time in Java millis. 
 	 */
-	public Long timeMillis; 
+	public SimpleLongProperty timeMillis;
+	
+	/**
+	 * The time the message was recieved on the PC
+	 */
+	public SimpleLongProperty pcMillis;
+
+	/**
+	 * The name of the sensor the message came from. 
+	 */
+	public SimpleStringProperty sensorName;
+
+	/**
+	 * Set the message time value in millis datenum
+	 * @param timeMillis - the time in milliseconds. 
+	 */
+	public void setTimeMillis(long timeMillis) {
+		if (this.timeMillis==null) this.timeMillis = new SimpleLongProperty(timeMillis);
+		else this.timeMillis.set(timeMillis);
+	}
+
+	/**
+	 * Set the name of sensor the date came from. 
+	 * @param sensorName2 - the name of the sensor. 
+	 */
+	public void setSensorName(String sensorName2) {
+		if (this.sensorName==null) this.sensorName = new SimpleStringProperty(sensorName2);
+		else this.sensorName.set(sensorName2);
+	}
+		
 	
 
 

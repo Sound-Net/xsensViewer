@@ -395,7 +395,7 @@ public class SerialSensorPane extends BorderPane {
 		
 		
 		if (sensormessage.timeMillis!=null) {
-			Date date = new Date(sensormessage.timeMillis);
+			Date date = new Date(sensormessage.timeMillis.get());
 			DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS");
 			formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 			timeLabel.setText(formatter.format(date));
@@ -412,11 +412,11 @@ public class SerialSensorPane extends BorderPane {
 		}
 
 		if (sensormessage.temperature!=null) {
-			tempLabel.setText(String.format("%.2f ", sensormessage.temperature) + DEGREE + "C"); 
+			tempLabel.setText(String.format("%.2f ", sensormessage.temperature.get()) + DEGREE + "C"); 
 		}
 
 		if (sensormessage.pressure!=null) {
-			pressureLabel.setText(String.format("%.3f ", sensormessage.pressure) + "mbar"); 
+			pressureLabel.setText(String.format("%.3f ", sensormessage.pressure.get()) + "mbar"); 
 		}
 
 		
@@ -435,11 +435,11 @@ public class SerialSensorPane extends BorderPane {
 		}
 
 		if (sensormessage.batteryLevel!=null) {
-			double batteryLevel=sensormessage.batteryLevel; 
+			double batteryLevel=sensormessage.batteryLevel.get(); 
 			
 			//System.out.println("Battary level: " + sensormessage.batteryLevel + "  " + sensormessage.batteryLevelV);
 			if (batteryLevel>98); batteryLevel=100; 
-			batLabel.setText(String.format("%.2f ", batteryLevel) + "%: " + String.format("%.2fV", sensormessage.batteryLevelV));
+			batLabel.setText(String.format("%.2f ", batteryLevel) + "%: " + String.format("%.2fV", sensormessage.batteryLevelV.get()));
 		}
 		
 		if (sensormessage.sdUsedSpace!=null) {

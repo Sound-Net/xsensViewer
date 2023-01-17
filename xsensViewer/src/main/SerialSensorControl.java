@@ -3,6 +3,8 @@ package main;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.TimeZone;
@@ -131,6 +133,11 @@ public class SerialSensorControl implements SensorControl {
 	 */
 	public void addSensorMessageListener(SensorMessageListener sensorMessageListener){
 		sensMessageListeners.add(sensorMessageListener); 
+	}
+	
+	@Override
+	public boolean removeSensorMessageListener(SensorMessageListener sensorMessageListener) {
+		return sensMessageListeners.remove(sensorMessageListener); 
 	}
 
 	
@@ -319,7 +326,13 @@ public class SerialSensorControl implements SensorControl {
     	//mtest.mid=XMID_GotoMeasurement;
     	mtest.mid=value;
     	mtest.charBufferRx=data;
-    	mtest.len = data.length;
+    	
+    	if (data!=null) {
+    		mtest.len = data.length;
+    	}
+    	else {
+        	mtest.len = 0; 
+    	}
 
     	sendMessage(mtest);  
 	}
@@ -339,8 +352,10 @@ public class SerialSensorControl implements SensorControl {
 	
     	//now need to send the message
     	try {
-    		System.out.println(serialComms.getOutputStream());
+    		//System.out.println(serialComms.getOutputStream());
 			serialComms.getOutputStream().write(XSensMessage.raw2Bytes(messageOut), 0, len);
+			
+			serialComms.getOutputStream().flush();
 			
 //			System.out.println("----Raw bytes sent----");
 //			for (int i=0; i<XSensMessage.raw2Bytes(messageOut).length; i++) {
@@ -360,13 +375,12 @@ public class SerialSensorControl implements SensorControl {
 	public void sendTimeMessage() {
 		
 		//what is the current time
-		long currentTime = System.currentTimeMillis(); 
+//		long currentTime = System.currentTimeMillis(); 
+//		Date date = new Date(currentTime);		
+//		DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS");
+//		formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 		
-		Date date = new Date(currentTime);
-		DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS");
-		formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-		
-		String timeS = formatter.format(date);
+		String timeS = 	LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS"));
 		
 		System.out.println("Send time to device: " + timeS);
 		//convert thre string to a byte array 
@@ -448,6 +462,7 @@ public class SerialSensorControl implements SensorControl {
 	public boolean isConnected() {
 		return this.isSerialRunning();
 	}
+
 
 
 
