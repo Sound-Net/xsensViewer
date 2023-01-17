@@ -107,11 +107,29 @@ public class MasterCommPane extends BorderPane {
 		reqTimeTable.setMaxWidth(TableView.USE_PREF_SIZE);
 		reqTimeTable.setPrefWidth(450);
 		
+		//make sure we can select multiple cells. 
+		reqTimeTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+		 
+	    final KeyCodeCombination keyCodeCopy = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_ANY);
+	    reqTimeTable.setOnKeyPressed(event -> {
+	        if (keyCodeCopy.match(event)) {
+	            copySelectionToClipboard(reqTimeTable);
+	        }
+	    });
+		
+		MenuItem item = new MenuItem("Copy");
+		item.setOnAction((a) ->{
+				copySelectionToClipboard(reqTimeTable);
+		});
+		ContextMenu menu = new ContextMenu();
+		menu.getItems().add(item);
+		reqTimeTable.setContextMenu(menu);
+		
 		
 		//enable copying. 
 		copySelectionToClipboard(reqTimeTable);
 
-		reqTimeTable.setEditable(true);
+		//reqTimeTable.setEditable(true);
 		   
 	    TableColumn<SensorData, String> deviceNameCol = new TableColumn<SensorData, String>("Device");
 	    deviceNameCol.setCellValueFactory(p -> p.getValue().sensorName);
@@ -289,13 +307,7 @@ public class MasterCommPane extends BorderPane {
 	    final ClipboardContent clipboardContent = new ClipboardContent();
 	    clipboardContent.putString(strb.toString());
 	    Clipboard.getSystemClipboard().setContent(clipboardContent);
-	    
-	    final KeyCodeCombination keyCodeCopy = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_ANY);
-	    table.setOnKeyPressed(event -> {
-	        if (keyCodeCopy.match(event)) {
-	            copySelectionToClipboard(table);
-	        }
-	    });
+	   
 	}
 //	
 //	/**
