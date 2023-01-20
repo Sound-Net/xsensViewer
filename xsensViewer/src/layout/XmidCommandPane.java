@@ -49,7 +49,9 @@ public class XmidCommandPane extends SerialCommPane {
 		        XsMessageID.XMID_GotoMeasurement,
 		        XsMessageID.XMID_GotoConfig,
 		        XsMessageID.XMID_SetNoRotation,
-		        XsMessageID.XMID_ReqFilterProfile
+		        XsMessageID.XMID_ReqFilterProfile,
+		        XsMessageID.XMID_ReqDid
+
 		    );
 		command = new ComboBox<XsMessageID>(commandOptions);
 		command.getSelectionModel().select(0);

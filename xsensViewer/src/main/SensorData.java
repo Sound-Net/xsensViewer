@@ -1,5 +1,7 @@
 package main;
 
+import java.nio.ByteBuffer;
+
 import comms.SerialMessageParser.DataTypes;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleLongProperty;
@@ -49,7 +51,9 @@ public class SensorData {
 			this.batteryLevel=new SimpleDoubleProperty(data[0]); 
 			this.batteryLevelV=new SimpleDoubleProperty(data[1]); 
 		}
-		if (flag==DataTypes.SD_USED_SPACE) sdUsedSpace = data; 
+		if (flag==DataTypes.SD_USED_SPACE) {
+			sdUsedSpace = data; 
+		}
 		this.pcMillis = new SimpleLongProperty(System.currentTimeMillis());
 	}
 	
@@ -148,6 +152,12 @@ public class SensorData {
 	 * The name of the sensor the message came from. 
 	 */
 	public SimpleStringProperty sensorName;
+	
+	/**
+	 * The device unique identifier
+	 */
+	public SimpleLongProperty deviceID;
+
 
 	/**
 	 * Set the message time value in millis datenum

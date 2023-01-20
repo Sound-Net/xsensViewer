@@ -3,11 +3,15 @@ package layout;
 import com.fazecast.jSerialComm.SerialPort;
 
 import comms.SerialUtils;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import main.SerialParams;
@@ -33,7 +37,11 @@ public class SerialCommPane extends BorderPane {
 	/**
 	 * Keep a record of the current serial ports. 
 	 */
-	private SerialPort[] portEnum; 
+	private SerialPort[] portEnum;
+
+	private HBox baudHolder; 
+
+
 
 	public SerialCommPane(){
 		this.setCenter(createSerialCommPane()); 
@@ -60,7 +68,11 @@ public class SerialCommPane extends BorderPane {
 		baudRates= new ComboBox<Integer>(); 
 		ObservableList<Integer> baudRateList = FXCollections.observableArrayList(SerialUtils.baudRate);
 		baudRates.setItems(baudRateList);
-		holder.getChildren().add(baudRates);
+		
+		baudHolder = new HBox(); 
+		baudHolder.setSpacing(5);
+		baudHolder.getChildren().add(baudRates);
+		holder.getChildren().add(baudHolder);
 
 		return holder;
 
@@ -117,6 +129,20 @@ public class SerialCommPane extends BorderPane {
 			e.printStackTrace();
 		}
 
+	}
+	
+	public HBox getBaudHolder() {
+		return baudHolder;
+	}
+
+
+	public  ComboBox<Integer> getBaudComboBox() {
+		return baudRates;
+	}
+
+
+	public ComboBox<String> getPortComboBox() {
+		return portNames;
 	}
 
 }

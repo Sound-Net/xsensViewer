@@ -76,14 +76,18 @@ public class SensorMain extends Application {
 //        });
         
         primaryStage.show();
-        sensorView.addSensorTab(0); 
-
-//        Platform.runLater(()->{
-//            sensorView.getTabbedPane().layout(); 
-//        });
+        
         
         //HACK -don't know why, but for some reason we need this to make sure the tab pane add button is laid out properly...
         //It's something to do with the header area not initialising until after the tab has been added. 
+        sensorView.addSensorTab("Sensor " + 0, sensorView.addSerialSensorPane()); 
+        
+        Platform.runLater(()->{
+        sensorView.removeSerialSensorPane(1);
+        sensorView.getTabbedPane().getTabs().remove(1); 
+        });
+
+       
         sensorView.getTabbedPane().layout(); 
 
     }

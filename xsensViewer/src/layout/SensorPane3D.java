@@ -417,7 +417,7 @@ public class SensorPane3D  extends BorderPane {
 		scene.setOnMousePressed(new EventHandler<MouseEvent>() {
 
 			@Override public void handle(MouseEvent me) {
-				//System.out.println("Mouse clicked"); 
+				System.out.println("Mouse clicked"); 
 				mousePosX = me.getSceneX();
 				mousePosY = me.getSceneY();
 				mouseOldX = me.getSceneX();
@@ -427,7 +427,7 @@ public class SensorPane3D  extends BorderPane {
 
 		scene.setOnScroll(new EventHandler<ScrollEvent>() {
 			@Override public void handle(ScrollEvent event) {
-				//System.out.println("Scroll Event: "+event.getDeltaX() + " "+event.getDeltaY()); 
+				System.out.println("Scroll Event: "+event.getDeltaX() + " "+event.getDeltaY()); 
 				translate.setZ(translate.getZ()+  event.getDeltaY() *0.001*translate.getZ());   // + 
 			}
 		});

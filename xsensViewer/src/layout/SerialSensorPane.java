@@ -14,12 +14,16 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBase;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.TextAlignment;
 import jfxtras.styles.jmetro.MDL2IconFont;
 import main.SerialSensorControl;
 import xsens.XsMessageID;
@@ -93,7 +97,12 @@ public class SerialSensorPane extends BorderPane {
 	/**
 	 * The default width for buttons to make things consistent. 
 	 */
-	private double BUTTON_WIDTH = 80; 
+	private double BUTTON_WIDTH = 80;
+
+	/**
+	 * Shows the unique ID of the device. 
+	 */
+	private Label idLabel; 
 
 	public SerialSensorPane(SerialSensorControl sensorControl){
 		
@@ -112,14 +121,26 @@ public class SerialSensorPane extends BorderPane {
 		leftHolder.getChildren().add(serialCommPane=new SerialCommPane());
 		serialCommPane.setParams(sensorControl.getParams());
 
-		leftHolder.getChildren().addAll(createConnectPane()); 
+		serialCommPane.getBaudHolder().getChildren().addAll(createConnectPane()); 
+		
+		startButton.prefHeightProperty().bind(serialCommPane.getBaudComboBox().heightProperty());
 
 		//leftHolder.getChildren().addAll(createDataTypePane());;
 		
 		Label sensorLabel = new  Label("Sensor Data"); 
 		sensorLabel.setPadding(new Insets(10,0,0,0));
 		SensorView.titlelabel(sensorLabel);
-		leftHolder.getChildren().addAll(sensorLabel); 
+		
+		idLabel= new Label(); 
+		idLabel.setTextAlignment(TextAlignment.CENTER);
+		idLabel.setAlignment(Pos.CENTER_LEFT);
+		
+		HBox sensorIDLabels = new HBox();
+		sensorIDLabels.setSpacing(5);
+		sensorIDLabels.setAlignment(Pos.BOTTOM_LEFT);
+		sensorIDLabels.getChildren().addAll(sensorLabel, idLabel);
+		
+		leftHolder.getChildren().addAll(sensorIDLabels); 
 
 		leftHolder.getChildren().addAll(createDataPane()); 
 		
@@ -138,18 +159,28 @@ public class SerialSensorPane extends BorderPane {
 
 		StackPane holderPane= new StackPane(); 
 		holderPane.getChildren().add(sensorPane3D=new SensorPane3D());
-		holderPane.setMouseTransparent(true);
+		//holderPane.setMouseTransparent(true);
 
 		Pane eulerPane= createEulerAnglesPane(); 
+		eulerPane.setMouseTransparent(true);
 		StackPane.setAlignment(eulerPane, Pos.TOP_LEFT);
 		holderPane.getChildren().add(eulerPane);
+		
+		//need a scroll pane for low DPI screens. 
+		ScrollPane scrollPane  = new ScrollPane(leftHolder); 
+		scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
 
 		this.setCenter(holderPane);
-		this.setLeft(leftHolder);
+		this.setLeft(scrollPane);
 	}
 
-
-
+	/**
+	 * Get the sensor control associated with the pane. 
+	 * @return the sensor control. 
+	 */
+	public SerialSensorControl getSensorControl() {
+		return sensorControl;
+	}
 
 
 	private Pane createEulerAnglesPane() {
@@ -219,14 +250,17 @@ public class SerialSensorPane extends BorderPane {
 				} 
 				setDataLabelsNull();
 				sensorControl.notifyUpdate(SensorUpdate.SENSOR_STOP,null); 
-				serialCommPane.setDisable(false);
+				serialCommPane.getBaudComboBox().setDisable(false);
+				serialCommPane.getPortComboBox().setDisable(false);
+
 			}
 			else {
 				//START
 				sensorControl.setParams(serialCommPane.getParams(this.sensorControl.getParams())); 
 				sensorControl.startSerial();
 				sensorControl.notifyUpdate(SensorUpdate.SENSOR_CONNECT,null); 
-				serialCommPane.setDisable(true);
+				serialCommPane.getBaudComboBox().setDisable(true);
+				serialCommPane.getPortComboBox().setDisable(true);
 			}
 			
 			updateStartButtonLabel(); 
@@ -241,11 +275,11 @@ public class SerialSensorPane extends BorderPane {
 		}); 
 
 		buttonHolder.getChildren().addAll( 
-				startButton, deployButton); 
+				startButton); 
 
 
 		VBox vBox = new VBox(); 
-		vBox.getChildren().addAll(new Label("Connect: "), buttonHolder);
+		vBox.getChildren().addAll( buttonHolder);
 
 		return vBox; 
 
@@ -446,6 +480,13 @@ public class SerialSensorPane extends BorderPane {
 			sdLabel.setText(String.format("%.3f of %.1f GB (%.2f%%) ", sensormessage.sdUsedSpace[0]/1000,  sensormessage.sdUsedSpace[1]/1000,  100*sensormessage.sdUsedSpace[0]/sensormessage.sdUsedSpace[1]));
 		}
 		
+		if (sensormessage.deviceID!=null) {
+			System.out.println("DEVICE_ID"); 
+			idLabel.setText(String.valueOf(sensormessage.deviceID.get())); 
+			idLabel.setTooltip(new Tooltip("Device ID: "+ String.valueOf(sensormessage.deviceID.get())));
+
+		}
+		
 		if (sensormessage.flag == DataTypes.MTMESSAGE) {
 			String dataStr="MTMessage: "; 
 			for (int i=0; i<sensormessage.mtMessage.length; i++) {
@@ -453,6 +494,8 @@ public class SerialSensorPane extends BorderPane {
 			}
 			commandPane.setMessageBackLabelText(dataStr);
 		}
+		
+
 		
 
 	}

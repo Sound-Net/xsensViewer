@@ -9,6 +9,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 import javafx.application.Platform;
+import javafx.beans.property.SimpleLongProperty;
 
 /**
  * Figures out what to do with serial message.
@@ -19,7 +20,7 @@ public class SerialMessageParser {
 
 	
 	public enum DataTypes {
-		EULAR_ANGLES, QUATERNION, PRESSURE_TEMPERATURE, BATTERYDATA, RGBDATA, MTDATA, MTMESSAGE, TEMPERATURE, LIGHT_SPECTRUM, SD_USED_SPACE, NO_DATA, RTC
+		EULAR_ANGLES, QUATERNION, PRESSURE_TEMPERATURE, BATTERYDATA, RGBDATA, MTDATA, MTMESSAGE, TEMPERATURE, LIGHT_SPECTRUM, SD_USED_SPACE, NO_DATA, RTC, DEVICEID
 	}
 
 			
@@ -42,7 +43,7 @@ public class SerialMessageParser {
 	 */
 	public void parseLine(String dataLine){
 		
-//		System.out.println(dataLine);
+		//System.out.println(dataLine);
 //		if (dataLine.toLowerCase().contains("time")){
 //			System.out.print(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS"))+ " -- ");
 //			System.out.println( " " +dataLine);
@@ -110,6 +111,14 @@ public class SerialMessageParser {
 		case MTMESSAGE:
 			sensorData=parseCommandString(stringData);
 			break;
+		case DEVICEID:
+
+			Long deviceID = Long.parseUnsignedLong(stringData.trim().replace("\n", ""));
+		
+			sensorData = new SensorData(null); 
+			sensorData.flag = DataTypes.DEVICEID;
+			sensorData.deviceID = new SimpleLongProperty(deviceID);
+			break;
 		case MTDATA:
 			//northing
 			break;
@@ -120,6 +129,9 @@ public class SerialMessageParser {
 		default:
 			break;
 		}	
+		
+		//System.out.println("DeviceID here 4: " + sensorData.deviceID); 
+
 		
 		sensorData.setTimeMillis(parseTime(splitStirng[splitStirng.length-3], splitStirng[splitStirng.length-2])); 
 		
@@ -206,6 +218,9 @@ public class SerialMessageParser {
 		if (ary[0].trim().equals("RTC")) {
 			flag=DataTypes.RTC; 
 		}
+		if (ary[0].trim().equals("ID")) {
+			flag=DataTypes.DEVICEID; 
+		}
 		
 		return flag; 
 	}
@@ -213,7 +228,7 @@ public class SerialMessageParser {
 	/**
 	 * Parse Eular angles in degrees. 
 	 * @param dataLine - the string data 
-	 * @return 
+	 * @return the data contained in the string. 
 	 */
 	public SensorData parseString(String dataLine, int nDataPoints, DataTypes flag){
 		double[] angles=doubleArrayParser(dataLine, nDataPoints);

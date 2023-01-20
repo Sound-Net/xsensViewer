@@ -38,6 +38,9 @@ public class MasterCommPane extends BorderPane {
 	
 	private static final double MULTI_BUTTON_WIDTH = 110;
 
+	/**
+	 * Reference to the sensors control. 
+	 */
 	private SensorsControl sensorsControl;
 
 	/**
@@ -45,9 +48,11 @@ public class MasterCommPane extends BorderPane {
 	 */
 	private Button setTimeButton;
 
-	
 	private GridPane sensorNamePane;
 
+	/**
+	 * Button to request the current RTC time. 
+	 */
 	private Button reqTimeButton;
 
 	/**
@@ -55,12 +60,14 @@ public class MasterCommPane extends BorderPane {
 	 */
 	private TableView<SensorData> reqTimeTable;
 	
+	/**
+	 * Listener for all incoming messages from all sensors. 
+	 */
 	private MasterensorMessageListener sensorMessageListener;
 
-	private ScrollPane reqTimeScrollpane; 
+//	private ScrollPane reqTimeScrollpane; 
 	
-	
-	
+
 
 	public MasterCommPane(SensorsControl sensorsControl) {
 		this.sensorsControl = sensorsControl; 
@@ -154,8 +161,7 @@ public class MasterCommPane extends BorderPane {
 	    TableColumn<SensorData, Number> timeDiffCol = new TableColumn<SensorData, Number>("Offset (millis)");
 	    timeDiffCol.setCellValueFactory(p -> p.getValue().pcMillis.subtract(p.getValue().timeMillis));
 	   
-	    
-	    
+	   
 	    reqTimeTable.getColumns().addAll(deviceNameCol, pctimeCol, sensorTimeCol, timeDiffCol);
 	 
 
@@ -241,7 +247,7 @@ public class MasterCommPane extends BorderPane {
 	 */
 	private void updateNamePane() {
 		sensorNamePane.getChildren().clear();
-		//System.out.print("NO. SENSOR CONTROLS: " +sensorControl.getSensorControls().size());
+		System.out.print("NO. SENSOR CONTROLS: " +sensorsControl.getSensorControls().size());
 		for (int i=0; i<sensorsControl.getSensorControls().size(); i++) {
 			//System.out.print("SENSOR: " +sensorControl.getSensorControls().get(i).getSensorName());
 			Label label = new Label(sensorsControl.getSensorControls().get(i).getSensorName()); 

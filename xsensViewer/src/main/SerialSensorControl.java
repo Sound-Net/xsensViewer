@@ -230,10 +230,11 @@ public class SerialSensorControl implements SensorControl {
 		protected Integer call() throws Exception {
 			connect= true;
 			try {
+				
 				serialComms.initialize();
 
 				if (serialComms.getSerialPort()!=null){
-					//System.out.println("Add event listener;");
+					System.out.println("Add event listener;");
 					serialComms.getSerialPort().removeDataListener();
 					serialComms.getSerialPort().addDataListener(new SerialListener(serialComms));
 					notifyUpdate(SensorUpdate.SENSOR_CONNECT, SerialSensorControl.this);
@@ -246,6 +247,7 @@ public class SerialSensorControl implements SensorControl {
 			}
 			catch (Exception e) {
 				e.printStackTrace();
+				notifyUpdate(SensorUpdate.SENSOR_STOP, SerialSensorControl.this);
 				return 0; 
 			}
 			
@@ -259,8 +261,17 @@ public class SerialSensorControl implements SensorControl {
 				}
 				
 				if (count==0) {
+					// request the SD card size. 
 					sendMessage(XsMessageID.XMID_ReqSDSize);
+					
 				}
+				
+				if (count==1) {
+					//request the device ID
+					sendMessage(XsMessageID.XMID_ReqDid);
+				}
+
+				
 				
 				count++;
 
