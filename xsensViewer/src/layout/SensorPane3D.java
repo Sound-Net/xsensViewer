@@ -28,6 +28,7 @@ import javafx.scene.shape.Sphere;
 import javafx.scene.text.Text;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
+import main.DeviceManager.DeviceType;
 import main.SensorData;
 
 /**
@@ -37,9 +38,10 @@ import main.SensorData;
  */
 public class SensorPane3D  extends BorderPane {
 
-//	private static final String MESH_FILENAME = "SensorPackageR5.stl";
-	
-	public final URL MESH_FILENAME = ClassLoader.getSystemResource("resources/SensorPackage_PLA.stl");
+	//	private static final String MESH_FILENAME = "SensorPackageR5.stl";
+
+	public final URL SENSLOGGER_V1 = ClassLoader.getSystemResource("resources/SensorPackage_PLA.stl");
+	public final URL SOUNDNET_V1_R5 = ClassLoader.getSystemResource("resources/SensorPackageR5.stl");
 
 	private static final double MODEL_SCALE_FACTOR = 10;
 
@@ -77,16 +79,22 @@ public class SensorPane3D  extends BorderPane {
 
 
 	/**
+	 * The current 3D model to show. 
+	 */
+	private DeviceType currentDevice = null; 
+
+
+	/**
 	 * Create the magnetic calibration pane. 
 	 * @param magneticCalibration - magnetic calibration class to calibrate the pane. 
 	 */
 	public SensorPane3D() {
 		this.setCenter(create3DPane());
 	}
-	
+
 
 	public void setOrientationData(SensorData sensormessage) {
-		
+
 		if (sensormessage.eularAngles!=null){
 			//matrixRotateNode(sensorGroup,Math.toRadians(sensormessage.eularAngles[0]), Math.toRadians(sensormessage.eularAngles[1]), Math.toRadians(sensormessage.eularAngles[2]));
 			if (sensormessage.eularAngles[0]!=0 && sensormessage.eularAngles[1]!=0 && sensormessage.eularAngles[2]!=0){
@@ -102,7 +110,7 @@ public class SensorPane3D  extends BorderPane {
 		}
 	}
 
-	
+
 	/**
 	 * Rotate by Euler angles 
 	 * @param n - the node to rotate; 
@@ -110,121 +118,145 @@ public class SensorPane3D  extends BorderPane {
 	 * @param pitch
 	 * @param yaw
 	 */
-//	private void matrixRotateNode(Node n, double roll, double pitch, double yaw){
-//	    double A11=Math.cos(roll)*Math.cos(yaw);
-//	    double A12=Math.cos(pitch)*Math.sin(roll)+Math.cos(roll)*Math.sin(pitch)*Math.sin(yaw);
-//	    double A13=Math.sin(roll)*Math.sin(pitch)-Math.cos(roll)*Math.cos(pitch)*Math.sin(yaw);
-//	    double A21=-Math.cos(yaw)*Math.sin(roll);
-//	    double A22=Math.cos(roll)*Math.cos(pitch)-Math.sin(roll)*Math.sin(pitch)*Math.sin(yaw);
-//	    double A23=Math.cos(roll)*Math.sin(pitch)+Math.cos(pitch)*Math.sin(roll)*Math.sin(yaw);
-//	    double A31=Math.sin(yaw);
-//	    double A32=-Math.cos(yaw)*Math.sin(pitch);
-//	    double A33=Math.cos(pitch)*Math.cos(yaw);
-//
-//	    double d = Math.acos((A11+A22+A33-1d)/2d);
-//	    if(d!=0d){
-//	        double den=2d*Math.sin(d);
-//	        Point3D p= new Point3D((A32-A23)/den,(A13-A31)/den,(A21-A12)/den);
-//	        n.setRotationAxis(p);
-//	        n.setRotate(Math.toDegrees(d));                    
-//	    }
-//	}
-	
+	//	private void matrixRotateNode(Node n, double roll, double pitch, double yaw){
+	//	    double A11=Math.cos(roll)*Math.cos(yaw);
+	//	    double A12=Math.cos(pitch)*Math.sin(roll)+Math.cos(roll)*Math.sin(pitch)*Math.sin(yaw);
+	//	    double A13=Math.sin(roll)*Math.sin(pitch)-Math.cos(roll)*Math.cos(pitch)*Math.sin(yaw);
+	//	    double A21=-Math.cos(yaw)*Math.sin(roll);
+	//	    double A22=Math.cos(roll)*Math.cos(pitch)-Math.sin(roll)*Math.sin(pitch)*Math.sin(yaw);
+	//	    double A23=Math.cos(roll)*Math.sin(pitch)+Math.cos(pitch)*Math.sin(roll)*Math.sin(yaw);
+	//	    double A31=Math.sin(yaw);
+	//	    double A32=-Math.cos(yaw)*Math.sin(pitch);
+	//	    double A33=Math.cos(pitch)*Math.cos(yaw);
+	//
+	//	    double d = Math.acos((A11+A22+A33-1d)/2d);
+	//	    if(d!=0d){
+	//	        double den=2d*Math.sin(d);
+	//	        Point3D p= new Point3D((A32-A23)/den,(A13-A31)/den,(A21-A12)/den);
+	//	        n.setRotationAxis(p);
+	//	        n.setRotate(Math.toDegrees(d));                    
+	//	    }
+	//	}
+
 	private void setPivot(Rotate rot) {
-		
+
 		//For pla
 		rot.setPivotX(0);
 		rot.setPivotY(0);
 		rot.setPivotZ(0);
 
-		
-		
-//		//For R5
-//		rot.setPivotX(0);
-//		rot.setPivotY(130);
-//		rot.setPivotZ(-10);
+
+
+		//		//For R5
+		//		rot.setPivotX(0);
+		//		rot.setPivotY(130);
+		//		rot.setPivotZ(-10);
 
 	}
 
-	
+
 	private void matrixRotateNode(Node n, double roll, double pitch, double yaw){
-		
-	    	Rotate headingR = null, rollR = null, pitchR =null;
-	    
-			n.getTransforms().clear(); 
 
-//	    	Translate translate= new Translate(); 
-//	    	translate.setZ(10);
-//	    	translate.setY(-130);    	
-//	    	translate.setX(+400);
-//	    	n.getTransforms().add(translate);
-			
-//////   	 //has to be in this order
-//   	headingR= new Rotate(); 
-//   	headingR.setAxis(new Point3D(1,0,0));
-//   	headingR.setAngle(yaw);
-//	    setPivot(headingR);
-//	    n.getTransforms().add(headingR);
-////	
-//	    rollR= new Rotate(); 
-//	    rollR.setAxis(new Point3D(0,1,0));
-//	    rollR.setAngle(roll);
-//	    setPivot(rollR);
-//	    n.getTransforms().add(rollR);
-//	    	
-//	    	//R5 sensor 
-//	    	Rotate pitchR1= new Rotate(); 
-//		    pitchR1.setAxis(new Point3D(0,0,1));
-//		    pitchR1.setAngle(-90);
-//		    setPivot(pitchR1);
-//		    n.getTransforms().add(pitchR1);
-//	    
-//		    pitchR= new Rotate(); 
-//		    pitchR.setAxis(new Point3D(0,0,1));
-//		    pitchR.setAngle(pitch);
-//		    setPivot(pitchR);
-//		    n.getTransforms().add(pitchR);
-////	    
-			
-//
-//			//R5
-//	    	headingR= new Rotate(); 
-//	    	headingR.setAxis(new Point3D(0,1,0));
-//	    	headingR.setAngle(-yaw);
-//		    n.getTransforms().add(headingR);
-//		    
-//		    pitchR= new Rotate(); 
-//		    pitchR.setAxis(new Point3D(1,0,0));
-//		    pitchR.setAngle(pitch);
-//		    n.getTransforms().add(pitchR);
-//
-//		    rollR= new Rotate(); 
-//		    rollR.setAxis(new Point3D(0,0,1));
-//		    rollR.setAngle(-roll);
-//		    n.getTransforms().add(rollR);
+		Rotate headingR = null, rollR = null, pitchR =null;
 
+		n.getTransforms().clear(); 
 
-			//PLABuiy 2 sensors V1
-	    	headingR= new Rotate(); 
-	    	headingR.setAxis(new Point3D(0,1,0));
-	    	headingR.setAngle(-yaw);
-		    n.getTransforms().add(headingR);
-		    
-		    pitchR= new Rotate(); 
-		    pitchR.setAxis(new Point3D(1,0,0));
-		    pitchR.setAngle(-pitch);
-		    n.getTransforms().add(pitchR);
+		//	    	Translate translate= new Translate(); 
+		//	    	translate.setZ(10);
+		//	    	translate.setY(-130);    	
+		//	    	translate.setX(+400);
+		//	    	n.getTransforms().add(translate);
 
-		    rollR= new Rotate(); 
-		    rollR.setAxis(new Point3D(0,0,1));
-		    rollR.setAngle(roll+180);
-		    n.getTransforms().add(rollR);
+		//////   	 //has to be in this order
+		//   	headingR= new Rotate(); 
+		//   	headingR.setAxis(new Point3D(1,0,0));
+		//   	headingR.setAngle(yaw);
+		//	    setPivot(headingR);
+		//	    n.getTransforms().add(headingR);
+		////	
+		//	    rollR= new Rotate(); 
+		//	    rollR.setAxis(new Point3D(0,1,0));
+		//	    rollR.setAngle(roll);
+		//	    setPivot(rollR);
+		//	    n.getTransforms().add(rollR);
+		//	    	
+		//	    	//R5 sensor 
+		//	    	Rotate pitchR1= new Rotate(); 
+		//		    pitchR1.setAxis(new Point3D(0,0,1));
+		//		    pitchR1.setAngle(-90);
+		//		    setPivot(pitchR1);
+		//		    n.getTransforms().add(pitchR1);
+		//	    
+		//		    pitchR= new Rotate(); 
+		//		    pitchR.setAxis(new Point3D(0,0,1));
+		//		    pitchR.setAngle(pitch);
+		//		    setPivot(pitchR);
+		//		    n.getTransforms().add(pitchR);
+		////	    
 
-		    
+		if (currentDevice!=null) {
+			switch (currentDevice) {
+			case SOUNDNET_V2_R1:
+				//TODO
+				//SoundNet V2 _ R1
+				headingR= new Rotate(); 
+				headingR.setAxis(new Point3D(0,1,0));
+				headingR.setAngle(-yaw);
+				n.getTransforms().add(headingR);
 
+				pitchR= new Rotate(); 
+				pitchR.setAxis(new Point3D(1,0,0));
+				pitchR.setAngle(pitch);
+				n.getTransforms().add(pitchR);
+
+				rollR= new Rotate(); 
+				rollR.setAxis(new Point3D(0,0,1));
+				rollR.setAngle(-roll);
+				n.getTransforms().add(rollR);
+
+				break;
+			case SOUNDNET_V1_R5:
+				//
+				//R5
+				headingR= new Rotate(); 
+				headingR.setAxis(new Point3D(0,1,0));
+				headingR.setAngle(-yaw);
+				n.getTransforms().add(headingR);
+
+				pitchR= new Rotate(); 
+				pitchR.setAxis(new Point3D(1,0,0));
+				pitchR.setAngle(pitch);
+				n.getTransforms().add(pitchR);
+
+				rollR= new Rotate(); 
+				rollR.setAxis(new Point3D(0,0,1));
+				rollR.setAngle(-roll);
+				n.getTransforms().add(rollR);
+				break;
+
+			case SENSLOGGER_V1:
+				//PLABuoy 2 sensors V1
+				headingR= new Rotate(); 
+				headingR.setAxis(new Point3D(0,1,0));
+				headingR.setAngle(-yaw);
+				n.getTransforms().add(headingR);
+
+				pitchR= new Rotate(); 
+				pitchR.setAxis(new Point3D(1,0,0));
+				pitchR.setAngle(-pitch);
+				n.getTransforms().add(pitchR);
+
+				rollR= new Rotate(); 
+				rollR.setAxis(new Point3D(0,0,1));
+				rollR.setAngle(roll+180);
+				n.getTransforms().add(rollR);
+				break;
+
+			}
+		}
 
 	}
-	
+
 	/**
 	 * 3D pane which allow users to visualise calibration measurements. 
 	 * @return 3D pane which shows magnetic measurements and ellipse calibration. 
@@ -252,32 +284,32 @@ public class SensorPane3D  extends BorderPane {
 
 		//group for ellipsoid
 		sensorGroup=new Group(); 
-		sensorGroup.getChildren().addAll(createSensor());
-	
+
+
 		PointLight light = new PointLight(Color.WHITE);
 		light.setTranslateX(-500);
 		light.setTranslateY(-500);
 		light.setTranslateZ(-500);
-		
-		
+
+
 		PointLight light1 = new PointLight(Color.WHITE);
 		light1.setTranslateX(+500);
 		light1.setTranslateY(+500);
 		light1.setTranslateZ(+500);
-		
-		
+
+
 		PointLight light2 = new PointLight(Color.WHITE);
 		light1.setTranslateX(0);
 		light1.setTranslateY(0);
 		light1.setTranslateZ(-500);
-		
+
 		PointLight light3 = new PointLight(Color.WHITE);
 		light1.setTranslateX(0);
 		light1.setTranslateY(0);
 		light1.setTranslateZ(+500);
 
 		root3D.getChildren().addAll(sensorGroup, axisGroup, light,light1,light2,light3);
-		
+
 		//Use a SubScene to mix 3D and 2D stuff.        
 		//note- make sure depth buffer in sub scene is enabled. 
 		SubScene subScene = new SubScene(root3D, 500,500, true, SceneAntialiasing.BALANCED);
@@ -288,7 +320,7 @@ public class SensorPane3D  extends BorderPane {
 		subScene.setFill(Color.BLACK);
 		subScene.setCamera(camera);
 
-//		//handle mouse events for sub scene
+		//		//handle mouse events for sub scene
 		handleMouse(pane3D); 
 
 		//create new group to add sub scene to 
@@ -303,9 +335,9 @@ public class SensorPane3D  extends BorderPane {
 	}
 
 	static MeshView[] loadMeshViews(URL file) {
-	//	File file = new File(MESH_FILENAME);
-		
-        System.out.println(file.getPath());
+		//	File file = new File(MESH_FILENAME);
+
+		System.out.println(file.getPath());
 
 		StlMeshImporter importer = new StlMeshImporter();
 		importer.read(file);
@@ -315,41 +347,55 @@ public class SensorPane3D  extends BorderPane {
 	} 
 
 
-	private MeshView[] createSensor() {
+	private MeshView[] createSensor(DeviceType deviceType) {
 
-//		URL url = getClass().getResource(MESH_FILENAME);
-//		
-//		System.out.println(url.getPath());
-//		
-//		//TEST
-//		try {
-//			String fileName= "C:\\Users\\macst\\Desktop\\jtestLaunch4j.txt";
-//			String str = url.getPath();
-//				    BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
-//				    writer.write(str);
-//				     
-//				    writer.close();
-//		}
-//		catch (Exception e){
-//			e.printStackTrace();
-//		}
-		
-//		File file = new File(url.getPath());
-		
-		MeshView[] meshViews = loadMeshViews(MESH_FILENAME);
-		
+		this.sensorGroup.getChildren().clear();
+
+		if (deviceType == null) return null; 
+		//		URL url = getClass().getResource(MESH_FILENAME);
+		//		
+		//		System.out.println(url.getPath());
+		//		
+		//		//TEST
+		//		try {
+		//			String fileName= "C:\\Users\\macst\\Desktop\\jtestLaunch4j.txt";
+		//			String str = url.getPath();
+		//				    BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
+		//				    writer.write(str);
+		//				     
+		//				    writer.close();
+		//		}
+		//		catch (Exception e){
+		//			e.printStackTrace();
+		//		}
+
+		//		File file = new File(url.getPath());
+
+		URL model = getDeviceModelURL(deviceType); 		
+
+		MeshView[] meshViews = loadMeshViews(model);
+
 		for (int i = 0; i < meshViews.length; i++) {
-			
-			/***PLA sensor***/
-			meshViews[i].setRotationAxis(new Point3D(1,0,0));
-			meshViews[i].setRotate(90); //for R5 sensor. 
-			
-			
-			
-//			meshViews[i].setRotationAxis(new Point3D(0,0,1));
-//			meshViews[i].setRotate(0); //for R5 sensor. 
-//			/***PLA sensor***/
 
+			switch (currentDevice) {
+			case SENSLOGGER_V1:
+				/***PLA sensor***/
+				meshViews[i].setRotationAxis(new Point3D(1,0,0));
+				meshViews[i].setRotate(90); //for R5 sensor. 
+				break;
+			case SOUNDNET_V1_R5:
+				meshViews[i].setRotationAxis(new Point3D(0,1,0));
+				meshViews[i].setRotate(90+180); //for R5 sensor. 
+				break;
+			case SOUNDNET_V2_R1:
+				//TODO
+				meshViews[i].setRotationAxis(new Point3D(0,1,0));
+				meshViews[i].setRotate(90+180); //for R5 sensor.
+				break;
+			default:
+				break;
+			}
+		
 			meshViews[i].setScaleX(MODEL_SCALE_FACTOR);
 			meshViews[i].setScaleY(MODEL_SCALE_FACTOR);
 			meshViews[i].setScaleZ(MODEL_SCALE_FACTOR);
@@ -359,9 +405,31 @@ public class SensorPane3D  extends BorderPane {
 			sample.setSpecularPower(16);
 			meshViews[i].setMaterial(sample);
 		}
-		
+
 		return meshViews;
 	}
+
+	private URL getDeviceModelURL(DeviceType deviceType) {
+		URL model = null; 
+		switch (deviceType) {
+		case SENSLOGGER_V1:
+			model = SENSLOGGER_V1; 
+			break;
+		case SOUNDNET_V1_R5:
+			model = SOUNDNET_V1_R5; 
+			break;
+		case SOUNDNET_V2_R1:
+			//TODO
+			model = SOUNDNET_V1_R5; 
+			break;
+		default:
+			break;
+
+		}
+
+		return model; 
+	}
+
 
 	/**
 	 * Create a mesh sphere for reference. 
@@ -525,6 +593,18 @@ public class SensorPane3D  extends BorderPane {
 		axisGroup.getChildren().addAll(xText, yText, zText);
 		axisGroup.getChildren().addAll(xSphere, ySphere, zSphere);
 		return axisGroup;
+	}
+
+	public void setDeviceModel() {
+		System.out.println("CREATE SENSOR MODEL!!"); 
+		sensorGroup.getChildren().addAll(createSensor(currentDevice));
+
+	}
+
+	public void setDeviceType(DeviceType currentDeviceID) {
+		this.currentDevice=currentDeviceID; 
+
+		setDeviceModel() ; 
 	}
 
 

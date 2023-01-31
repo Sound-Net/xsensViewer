@@ -27,6 +27,8 @@ import javafx.scene.text.TextAlignment;
 import jfxtras.styles.jmetro.MDL2IconFont;
 import main.SerialSensorControl;
 import xsens.XsMessageID;
+import main.DeviceManager;
+import main.DeviceManager.DeviceType;
 import main.SensorData;
 import main.SensorsControl.SensorUpdate;
 
@@ -103,6 +105,14 @@ public class SerialSensorPane extends BorderPane {
 	 * Shows the unique ID of the device. 
 	 */
 	private Label idLabel; 
+	
+	private DeviceType currentDeviceID = DeviceType.SENSLOGGER_V1;
+
+	private Button eraseButton;
+
+	private Button refreshbutton;
+
+	private Button setTimeButton;
 
 	public SerialSensorPane(SerialSensorControl sensorControl){
 		
@@ -313,12 +323,13 @@ public class SerialSensorPane extends BorderPane {
 		Label sensorTimelabel = new Label("Sensor time ");
 		timeBox.setLeft(setLabelFontBold(sensorTimelabel)); 
 		
-		Button setTimeButton = new Button("Set"); 
+		setTimeButton = new Button("Set"); 
 		setTimeButton.setPrefWidth(BUTTON_WIDTH);
 		setTimeButton.setOnAction((action)->{
 			sensorControl.sendTimeMessage(); 
 		});
 		timeBox.setRight(setTimeButton); 
+		setTimeButton.setDisable(true); 
 		//timeBox.setAlignment(Pos.CENTER_LEFT);
 		BorderPane.setAlignment(sensorTimelabel, Pos.CENTER_LEFT);
 		
@@ -349,20 +360,23 @@ public class SerialSensorPane extends BorderPane {
 		Label sdCardLabel = new Label("SD card: "); 
 		sdBox.setLeft(setLabelFontBold(sdCardLabel)); 
 		
-		Button eraseButton = new Button("Erase"); 
+		eraseButton = new Button("Erase"); 
 		eraseButton.setPrefWidth(BUTTON_WIDTH);
 		eraseButton.setOnAction((action)->{
 			sensorControl.sendMessage(XsMessageID.XMID_ReqSDFormat); 
 		});
 		
 		MDL2IconFont iconFont1 = new MDL2IconFont("\uE72C");
-		Button refreshbutton = new Button(""); 
+		refreshbutton = new Button(""); 
 		refreshbutton.setGraphic(iconFont1);
 		//refreshbutton.setPrefWidth(BUTTON_WIDTH);
 		refreshbutton.setOnAction((action)->{
 			sensorControl.sendMessage(XsMessageID.XMID_ReqSDSize); 
 		});
 		
+		refreshbutton.setDisable(true);
+		eraseButton.setDisable(true);
+
 		HBox buttonBox = new HBox(); 
 		buttonBox.setSpacing(5);
 		buttonBox.getChildren().addAll(refreshbutton, eraseButton); 
@@ -429,6 +443,7 @@ public class SerialSensorPane extends BorderPane {
 		
 		
 		if (sensormessage.timeMillis!=null) {
+			setTimeButton.setDisable(false); 
 			Date date = new Date(sensormessage.timeMillis.get());
 			DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS");
 			formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -477,14 +492,21 @@ public class SerialSensorPane extends BorderPane {
 		}
 		
 		if (sensormessage.sdUsedSpace!=null) {
+			refreshbutton.setDisable(false);
+			eraseButton.setDisable(false);
 			sdLabel.setText(String.format("%.3f of %.1f GB (%.2f%%) ", sensormessage.sdUsedSpace[0]/1000,  sensormessage.sdUsedSpace[1]/1000,  100*sensormessage.sdUsedSpace[0]/sensormessage.sdUsedSpace[1]));
+		
 		}
 		
 		if (sensormessage.deviceID!=null) {
-			System.out.println("DEVICE_ID"); 
 			idLabel.setText(String.valueOf(sensormessage.deviceID.get())); 
 			idLabel.setTooltip(new Tooltip("Device ID: "+ String.valueOf(sensormessage.deviceID.get())));
 
+		}
+		
+		if (sensormessage.deviceType!=null) {
+			this.sensorControl.getDeviceManager().setCurrentDevice(DeviceManager.getDeviceType(sensormessage.deviceType.get())); 
+			this.sensorPane3D.setDeviceType(this.sensorControl.getDeviceManager().getCurrentDevice()); 
 		}
 		
 		if (sensormessage.flag == DataTypes.MTMESSAGE) {
@@ -494,9 +516,6 @@ public class SerialSensorPane extends BorderPane {
 			}
 			commandPane.setMessageBackLabelText(dataStr);
 		}
-		
-
-		
 
 	}
 	

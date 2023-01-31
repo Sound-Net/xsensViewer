@@ -247,7 +247,7 @@ public class MasterCommPane extends BorderPane {
 	 */
 	private void updateNamePane() {
 		sensorNamePane.getChildren().clear();
-		System.out.print("NO. SENSOR CONTROLS: " +sensorsControl.getSensorControls().size());
+		//System.out.print("NO. SENSOR CONTROLS: " +sensorsControl.getSensorControls().size());
 		for (int i=0; i<sensorsControl.getSensorControls().size(); i++) {
 			//System.out.print("SENSOR: " +sensorControl.getSensorControls().get(i).getSensorName());
 			Label label = new Label(sensorsControl.getSensorControls().get(i).getSensorName()); 

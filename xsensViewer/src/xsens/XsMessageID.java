@@ -34,7 +34,9 @@ public enum XsMessageID  {
 	XMID_SetRTCTime (0x66), 
 	XMID_ReqRTCTime (0x67), 
 	XMID_ReqSDFormat(0x68), 
-	XMID_ReqSDSize(0x69); 
+	XMID_ReqSDSize(0x69),
+	XMID_ReqDeviceType (0x6A),
+	XMID_DeviceType(0x6B);
 
 	/**
 	 * The unsigned byte value represented as an int. 

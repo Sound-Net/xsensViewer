@@ -9,6 +9,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 import javafx.application.Platform;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleLongProperty;
 
 /**
@@ -20,7 +21,7 @@ public class SerialMessageParser {
 
 	
 	public enum DataTypes {
-		EULAR_ANGLES, QUATERNION, PRESSURE_TEMPERATURE, BATTERYDATA, RGBDATA, MTDATA, MTMESSAGE, TEMPERATURE, LIGHT_SPECTRUM, SD_USED_SPACE, NO_DATA, RTC, DEVICEID
+		EULAR_ANGLES, QUATERNION, PRESSURE_TEMPERATURE, BATTERYDATA, RGBDATA, MTDATA, MTMESSAGE, TEMPERATURE, LIGHT_SPECTRUM, SD_USED_SPACE, NO_DATA, RTC, DEVICEID, DEVICETYPE
 	}
 
 			
@@ -60,6 +61,8 @@ public class SerialMessageParser {
 	
 		String[] splitStirng = dataLine.split(":");
 		
+		//System.out.println(splitStirng[splitStirng.length-1].trim());
+
 	
 		DataTypes messageFlag = getMessageFlag(splitStirng[splitStirng.length-1].trim());
 		if (messageFlag==null) {
@@ -77,7 +80,7 @@ public class SerialMessageParser {
 			stringData+=ary[i]+" "; 
 		}
 		
-		//System.out.println("Incomming data: " + dataLine + " flag: " + messageFlag);
+	//	System.out.println("Incomming data: " + dataLine + " flag: " + messageFlag);
 		
 		SensorData sensorData=null; 
 		switch (messageFlag){
@@ -109,6 +112,7 @@ public class SerialMessageParser {
 			sensorData=null;
 			break;
 		case MTMESSAGE:
+			//raw messages from MT data
 			sensorData=parseCommandString(stringData);
 			break;
 		case DEVICEID:
@@ -119,8 +123,16 @@ public class SerialMessageParser {
 			sensorData.flag = DataTypes.DEVICEID;
 			sensorData.deviceID = new SimpleLongProperty(deviceID);
 			break;
+		case DEVICETYPE:
+
+			Integer deviceType = Integer.parseInt(stringData.trim().replace("\n", "")); 
+			
+			sensorData = new SensorData(null); 
+			sensorData.flag = DataTypes.DEVICETYPE;
+			sensorData.deviceType = new SimpleIntegerProperty(deviceType);
+			break;
 		case MTDATA:
-			//northing
+			//nothing
 			break;
 		case RTC:
 			sensorData = new SensorData(null); 
@@ -132,9 +144,9 @@ public class SerialMessageParser {
 		
 		//System.out.println("DeviceID here 4: " + sensorData.deviceID); 
 
-		
-		sensorData.setTimeMillis(parseTime(splitStirng[splitStirng.length-3], splitStirng[splitStirng.length-2])); 
-		
+		if (splitStirng.length>2) {
+			sensorData.setTimeMillis(parseTime(splitStirng[splitStirng.length-3], splitStirng[splitStirng.length-2])); 
+		}
 		sensorData.setSensorName(sensorControl.getSensorName()); 
 		
 //		System.out.print(sensorControl.getSensorName() + "  " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS"))+ " -- ");
@@ -220,6 +232,9 @@ public class SerialMessageParser {
 		}
 		if (ary[0].trim().equals("ID")) {
 			flag=DataTypes.DEVICEID; 
+		}
+		if (ary[0].trim().equals("DID")) {
+			flag=DataTypes.DEVICETYPE; 
 		}
 		
 		return flag; 
