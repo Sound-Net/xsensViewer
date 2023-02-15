@@ -70,6 +70,11 @@ public class SerialSensorControl implements SensorControl {
 	private final static byte[] STATUS_CONNECTED=new byte[] {0x00};
 
 	/**
+	 * The unique ID of the sensor (if it has one)
+	 */
+	private Long ID = null;
+
+	/**
 	 * Raw buffer for message out.  
 	 */
 	private int[] messageOut = new int[255];
@@ -83,7 +88,8 @@ public class SerialSensorControl implements SensorControl {
 	 * The device manager. 
 	 */
 	private DeviceManager deviceManager = new  DeviceManager(); 
-
+	
+	
 
 	public SerialSensorControl(SensorsControl sensorsControl){
 		this.sensorsControl=sensorsControl; 
@@ -537,6 +543,19 @@ public class SerialSensorControl implements SensorControl {
 	 */
 	public DeviceManager getDeviceManager() {
 		return deviceManager;
+	}
+
+	@Override
+	public Long getSensorUID() {
+		return this.ID;
+	}
+	
+	/**
+	 * Set the unique ID of the sensor. 
+	 * @param ID - the ID. 
+	 */
+	public void setSensorUID(Long ID) {
+		 this.ID=ID;
 	}
 
 }

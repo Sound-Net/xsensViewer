@@ -138,8 +138,8 @@ public class MasterCommPane extends BorderPane {
 
 		//reqTimeTable.setEditable(true);
 		   
-	    TableColumn<SensorData, String> deviceNameCol = new TableColumn<SensorData, String>("Device");
-	    deviceNameCol.setCellValueFactory(p -> p.getValue().sensorName);
+	    TableColumn<SensorData,  Number> deviceNameCol = new TableColumn<SensorData, Number>("Device ID");
+	    deviceNameCol.setCellValueFactory(p -> p.getValue().deviceID);
 	   
 
 	

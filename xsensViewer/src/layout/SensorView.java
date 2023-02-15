@@ -357,7 +357,6 @@ public class SensorView extends BorderPane {
 	 */
 	private void notifyUpdate(SensorUpdate sensorUpdate, Object dataObject) {
 		masterCommPane.notifyUpdate(sensorUpdate, dataObject); 
-		
 	}
 
 

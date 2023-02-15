@@ -82,6 +82,8 @@ public class SerialMessageParser {
 		
 	//	System.out.println("Incomming data: " + dataLine + " flag: " + messageFlag);
 		
+
+		
 		SensorData sensorData=null; 
 		switch (messageFlag){
 		case EULAR_ANGLES:
@@ -124,12 +126,10 @@ public class SerialMessageParser {
 			sensorData.deviceID = new SimpleLongProperty(deviceID);
 			break;
 		case DEVICETYPE:
-
 			Integer deviceType = Integer.parseInt(stringData.trim().replace("\n", "")); 
-			
 			sensorData = new SensorData(null); 
 			sensorData.flag = DataTypes.DEVICETYPE;
-			sensorData.deviceType = new SimpleIntegerProperty(deviceType);
+			sensorData.deviceType = new SimpleLongProperty(deviceType);
 			break;
 		case MTDATA:
 			//nothing
@@ -141,6 +141,13 @@ public class SerialMessageParser {
 		default:
 			break;
 		}	
+		
+		
+		//if no device ID has been parsed and there is a set device ID then add this to the 
+		//sensorData structure. 
+		if (sensorControl.getSensorUID()!=null && sensorData.deviceID==null) {
+			sensorData.deviceID = new SimpleLongProperty(this.sensorControl.getSensorUID());
+		}
 		
 		//System.out.println("DeviceID here 4: " + sensorData.deviceID); 
 

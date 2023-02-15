@@ -7,8 +7,8 @@ package main;
  */
 public class DeviceManager {
 	
-	DeviceType currentDevice = null;  
-	
+	DeviceType currentDevice = null;
+		
 	
 	public enum DeviceType {
 		SENSLOGGER_V1(200), SOUNDNET_V2_R1(10), SOUNDNET_V1_R5(5);
@@ -24,7 +24,7 @@ public class DeviceManager {
 	 * @param type - the type flag. 
 	 * @return the corresponding devide enum. 
 	 */
-	public static DeviceType getDeviceType(int type) {
+	public static DeviceType getDeviceType(long type) {
 		DeviceType[] types = DeviceType.values();
 		for (int i=0; i<types.length ; i++) {
 			if (type  == types[i].ID) {

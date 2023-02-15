@@ -505,6 +505,8 @@ public class SerialSensorPane extends BorderPane {
 		}
 		
 		if (sensormessage.deviceType!=null) {
+			//bit of a HACK - really this should be in the serial sensor control because it does not directly realte ot viewing data but. 
+			this.sensorControl.setSensorUID(new Long(sensormessage.deviceType.get())); 
 			this.sensorControl.getDeviceManager().setCurrentDevice(DeviceManager.getDeviceType(sensormessage.deviceType.get())); 
 			this.sensorPane3D.setDeviceType(this.sensorControl.getDeviceManager().getCurrentDevice()); 
 		}

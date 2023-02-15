@@ -1,7 +1,5 @@
 package main;
 
-import java.nio.ByteBuffer;
-
 import comms.SerialMessageParser.DataTypes;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -162,7 +160,7 @@ public class SensorData {
 	/**
 	 * The device ID. 
 	 */
-	public SimpleIntegerProperty deviceType;
+	public SimpleLongProperty deviceType;
 
 
 	/**
