@@ -250,9 +250,6 @@ public class SerialSensorControl implements SensorControl {
 		protected Integer call() throws Exception {
 			connect= true;
 			
-			boolean needDeviceID = true; 
-			
-			
 			try {
 
 
@@ -289,39 +286,35 @@ public class SerialSensorControl implements SensorControl {
 							serialComms.getOutputStream().write(STATUS_CONNECTED, 0, 1);
 							serialComms.getOutputStream().flush(); 
 						}
-
 						
-						if (serialListener.getCount()>10 && needDeviceID) {
+						if (serialListener.getCount()>10 && getSensorUID()==null) {
 							System.out.println("REQUEST DEVICE ID");
 							//request the device ID
 							sendMessage(XsMessageID.XMID_GotoConfig);
 							sendMessage(XsMessageID.XMID_ReqDid);
 							Thread.sleep(100);
 							sendMessage(XsMessageID.XMID_ReqDeviceType);
-							Thread.sleep(100);
 							sendMessage(XsMessageID.XMID_GotoMeasurement);
-							needDeviceID = false; 
-
 						}
 						
 						//System.out.println("Send output stream: 1" + isCancelled());
-
 						if (count%30==0) {
 							System.out.println("REQUEST SD SIZE");
 							// request the SD card size. 
-							sendMessage(XsMessageID.XMID_ReqSDSize);
-
+							sendMessage(XsMessageID.XMID_ReqSDSize);			
+//							if (getSensorUID()==null) {
+//								sendMessage(XsMessageID.XMID_GotoConfig);
+//								sendMessage(XsMessageID.XMID_ReqDid);
+//								Thread.sleep(100);
+//								sendMessage(XsMessageID.XMID_GotoMeasurement);
+//							}
 						}
-
-		
-
 					}
 					else {
 						serialComms.initialize();
 						serialComms.getSerialPort().openPort(1000);
 						System.err.println("Serial port is not open: " + serialComms.getSerialPort().isOpen());
 					}
-
 
 					count++;
 

@@ -58,7 +58,20 @@ public class SerialCommPane extends BorderPane {
 		holder.getChildren().add(portNamesLabel);
 		//create a lit of comm ports. 
 
-		portNames= new ComboBox<String>(); 
+		portNames= new ComboBox<String>();
+		//show different serial ports when the combo box is opened. i.e. adds
+		//or removes serial ports when he program is opened.
+		portNames.showingProperty().addListener((obsVal, oldVal, newVal)->{
+			//note must do this on showing property - set on action causes all sorts of weirdness
+			if (newVal) {
+				//if the combo box is showing see if the menu needs changed to show correct COM ports. 
+				setSensorNames();
+			}
+		});
+//		portNames.setOnAction((action)->{
+//			setSensorNames();
+//		});
+		
 		holder.getChildren().add(portNames);
 
 
@@ -108,7 +121,7 @@ public class SerialCommPane extends BorderPane {
 	}
 
 
-	private void  setSensorNames(){
+	private synchronized void setSensorNames(){
 
 		try {
 			portEnum = SerialPort.getCommPorts();

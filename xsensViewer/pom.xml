@@ -6,6 +6,24 @@
 	<artifactId>xsensViewer</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<description>Views sensor data via serial from attached devices</description>
+	
+	
+	<repositories>
+			<!--  Project repo to hold the custom jar files that are not available in Maven.  Do
+		this so that we don't have to do the extra step of manually installing jar files in the local repo -->
+		<repository>
+			<id>repo</id>
+			<releases>
+				<enabled>true</enabled>
+				<checksumPolicy>ignore</checksumPolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<url>file://${project.basedir}/repo</url>
+		</repository>
+	</repositories>
+
 
 	<dependencies>
 		<dependency>
@@ -14,6 +32,14 @@
 			<version>4.11</version>
 			<scope>test</scope>
 		</dependency>
+		
+				<!-- https://mvnrepository.com/artifact/org.jfxtras/jmetro -->
+		<dependency>
+			<groupId>org.interactivemesh</groupId>
+			<artifactId>stl</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		
 
 		<!-- https://mvnrepository.com/artifact/org.jfxtras/jmetro -->
 		<dependency>
@@ -46,7 +72,7 @@
 
 	<build>
 		<sourceDirectory>src</sourceDirectory>
-		<resources>
+			<resources>
 			<resource>
 				<directory>src</directory>
 				<excludes>
@@ -61,8 +87,74 @@
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
+					<release>1.8</release>
+					<!-- -The bit below prevents jar from being implemented -->
+					<!-- <compilerId>jdt</compilerId> <compilerArguments> <properties>.settings/org.eclipse.jdt.core.prefs</properties> 
+						make sure to use same params as what Eclipse uses </compilerArguments> -->
 				</configuration>
 			</plugin>
+			
+			 <plugin>
+		      <!-- Build an executable JAR -->
+		      <groupId>org.apache.maven.plugins</groupId>
+		      <artifactId>maven-jar-plugin</artifactId>
+		      <version>3.1.0</version>
+		      <configuration>
+		        <archive>
+		          <manifest>
+		            <addClasspath>false</addClasspath>
+		            <classpathPrefix>lib/</classpathPrefix>
+		            <mainClass>main.SensorMain</mainClass>
+		          </manifest>
+		        </archive>
+		      </configuration>
+		    </plugin>
+		    
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.4.0</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.2.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.3.0</version>
+				<configuration>
+					<!-- <source>8</source> <detectJavaApiLink>false</detectJavaApiLink> -->
+					<failOnError>false</failOnError>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
+
 	</build>
 </project>

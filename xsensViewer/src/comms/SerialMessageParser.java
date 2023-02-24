@@ -21,7 +21,7 @@ public class SerialMessageParser {
 
 	
 	public enum DataTypes {
-		EULAR_ANGLES, QUATERNION, PRESSURE_TEMPERATURE, BATTERYDATA, RGBDATA, MTDATA, MTMESSAGE, TEMPERATURE, LIGHT_SPECTRUM, SD_USED_SPACE, NO_DATA, RTC, DEVICEID, DEVICETYPE
+		EULAR_ANGLES, QUATERNION, PRESSURE_TEMPERATURE, BATTERYDATA, RGBDATA, MTDATA, MTMESSAGE, TEMPERATURE, LIGHT_SPECTRUM, SD_USED_SPACE, NO_DATA, RTC, RTCACK, DEVICEID, DEVICETYPE
 	}
 
 			
@@ -44,7 +44,7 @@ public class SerialMessageParser {
 	 */
 	public void parseLine(String dataLine){
 		
-		//System.out.println(dataLine);
+		System.out.println(dataLine);
 //		if (dataLine.toLowerCase().contains("time")){
 //			System.out.print(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS"))+ " -- ");
 //			System.out.println( " " +dataLine);
@@ -81,7 +81,6 @@ public class SerialMessageParser {
 		}
 		
 	//	System.out.println("Incomming data: " + dataLine + " flag: " + messageFlag);
-		
 
 		
 		SensorData sensorData=null; 
@@ -135,22 +134,28 @@ public class SerialMessageParser {
 			//nothing
 			break;
 		case RTC:
-			sensorData = new SensorData(null); 
-			sensorData.flag = DataTypes.RTC;
+		case RTCACK:
+			if (ary.length>1) {
+				//the RTC is contained in a data message i.e. this is usually non time stamped data. 
+				//the RTC is the time stamp. 
+				sensorData = new SensorData(null); 
+				sensorData.flag = messageFlag;
+				sensorData=parseString(stringData, 2, messageFlag);
+
+			}
+			else {
+				//the RTC is the time stamp. 
+				sensorData = new SensorData(null); 
+				sensorData.flag = messageFlag;
+			}
 			break; 
 		default:
 			break;
 		}	
 		
-		
-		//if no device ID has been parsed and there is a set device ID then add this to the 
-		//sensorData structure. 
-		if (sensorControl.getSensorUID()!=null && sensorData.deviceID==null) {
-			sensorData.deviceID = new SimpleLongProperty(this.sensorControl.getSensorUID());
-		}
+	
 		
 		//System.out.println("DeviceID here 4: " + sensorData.deviceID); 
-
 		if (splitStirng.length>2) {
 			sensorData.setTimeMillis(parseTime(splitStirng[splitStirng.length-3], splitStirng[splitStirng.length-2])); 
 		}
@@ -158,9 +163,16 @@ public class SerialMessageParser {
 		
 //		System.out.print(sensorControl.getSensorName() + "  " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS"))+ " -- ");
 //		System.out.println(LocalDateTime.ofInstant(Instant.ofEpochMilli (sensorData.timeMillis ),  ZoneOffset.UTC ).format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS"))+ " -- ");
-
 		
-		if (sensorData==null) return;
+		//if no device ID has been parsed and there is a set device ID then add this to the 
+		//sensorData structure. 
+		if (sensorControl.getSensorUID()!=null && sensorData.deviceID==null) {
+			sensorData.deviceID = new SimpleLongProperty(this.sensorControl.getSensorUID());
+		}
+		
+		if (sensorData==null) {
+			return;
+		}
 		newMessage(sensorData);
 
 	}
@@ -234,6 +246,9 @@ public class SerialMessageParser {
 		if (ary[0].trim().equals("ND")) {
 			flag=DataTypes.NO_DATA; 
 		}
+		if (ary[0].trim().equals("RTCACK")) {
+			flag=DataTypes.RTCACK; 
+		}
 		if (ary[0].trim().equals("RTC")) {
 			flag=DataTypes.RTC; 
 		}
@@ -253,12 +268,22 @@ public class SerialMessageParser {
 	 * @return the data contained in the string. 
 	 */
 	public SensorData parseString(String dataLine, int nDataPoints, DataTypes flag){
-		double[] angles=doubleArrayParser(dataLine, nDataPoints);
-		if (angles!=null){
-			SensorData sensorComms = new SensorData(angles, flag); 
+		if (flag == DataTypes.RTC) {
+			int[] vals=intArrayParser(dataLine, nDataPoints);
+			if (vals!=null){
+				SensorData sensorComms = new SensorData(vals, flag); 
+				return sensorComms; 
+			}
+			return null;
+		}
+		else {
+		double[] vals=doubleArrayParser(dataLine, nDataPoints);
+		if (vals!=null){
+			SensorData sensorComms = new SensorData(vals, flag); 
 			return sensorComms; 
 		}
 		return null; 
+		}
 	}
 
 
@@ -269,6 +294,22 @@ public class SerialMessageParser {
 			//have a set of eulaer angles
 			for (int i=0; i<nNumbers; i++){
 				outArray[i]=Double.valueOf(ary[i]);
+			}
+			return outArray; 
+		}
+		else{
+			return null; 
+		}
+	}
+	
+	
+	private int[] intArrayParser(String dataLine, int nNumbers){
+		String[] ary = dataLine.split(" ");
+		if (ary.length==nNumbers){
+			int[] outArray= new int[nNumbers]; 
+			//have a set of eulaer angles
+			for (int i=0; i<nNumbers; i++){
+				outArray[i]=Integer.valueOf(ary[i]);
 			}
 			return outArray; 
 		}

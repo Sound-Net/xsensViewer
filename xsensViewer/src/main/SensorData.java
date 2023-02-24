@@ -29,6 +29,15 @@ public class SensorData {
 		this(data, flag);
 		this.timeMillis = new SimpleLongProperty(timemillis);
 	}
+	
+	public SensorData(int[] data, DataTypes flag) {
+		this.flag=flag; 
+		if (flag==DataTypes.RTC) {
+			this.timeMillis=new SimpleLongProperty(((long) data[0])*1000 +  data[1]/1000); 
+		}
+		this.pcMillis = new SimpleLongProperty(System.currentTimeMillis());
+	}
+
 
 	/**
 	 * Constructor for sensor data from a sensor. 

@@ -1,5 +1,6 @@
 package main;
 
+import java.awt.Label;
 import java.io.IOException;
 import java.net.URL;
 
@@ -18,7 +19,6 @@ import jfxtras.styles.jmetro.Style;
 import layout.SerialSensorPane;
 import layout.SensorView;
 
- 
 /**
  * Starts the JavaFX thread and UI application. 
  * 
@@ -39,13 +39,18 @@ public class SensorMain extends Application {
     
     @Override
     public void start(Stage primaryStage) throws IOException {
+    	
+        String javaVersion = System.getProperty("java.version");
+
+        System.out.println("Running on Java " + javaVersion);
+
      
         StackPane root = new StackPane();
         
         SensorsControl sensorControl = new SensorsControl(); 
         SensorView sensorView = new SensorView(sensorControl); 
         
-		primaryStage.getIcons().add( new Image(SensorMain.class.getResourceAsStream("rotate_icon.png"))); 
+		//primaryStage.getIcons().add( new Image(SensorMain.class.getResourceAsStream("rotate_icon.png"))); 
 
 		root.setPadding(new Insets(5,5,5,5));
 		

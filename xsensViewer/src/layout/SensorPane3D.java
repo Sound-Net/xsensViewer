@@ -42,6 +42,8 @@ public class SensorPane3D  extends BorderPane {
 
 	public final URL SENSLOGGER_V1 = ClassLoader.getSystemResource("resources/SensorPackage_PLA.stl");
 	public final URL SOUNDNET_V1_R5 = ClassLoader.getSystemResource("resources/SensorPackageR5.stl");
+	public final URL SOUNDNET_V2_R1 = ClassLoader.getSystemResource("resources/SoundNet2 v1_complete_low_res.stl");
+
 
 	private static final double MODEL_SCALE_FACTOR = 10;
 
@@ -267,7 +269,7 @@ public class SensorPane3D  extends BorderPane {
 
 		// Create and position camera
 		PerspectiveCamera camera = new PerspectiveCamera(true);
-		camera.setFarClip(15000);
+		camera.setFarClip(150000);
 		camera.setNearClip(0.1);
 		camera.setDepthTest(DepthTest.ENABLE);
 		camera.getTransforms().addAll ( 
@@ -287,26 +289,26 @@ public class SensorPane3D  extends BorderPane {
 
 
 		PointLight light = new PointLight(Color.WHITE);
-		light.setTranslateX(-500);
-		light.setTranslateY(-500);
-		light.setTranslateZ(-500);
+		light.setTranslateX(-5000);
+		light.setTranslateY(-5000);
+		light.setTranslateZ(-5000);
 
 
 		PointLight light1 = new PointLight(Color.WHITE);
-		light1.setTranslateX(+500);
-		light1.setTranslateY(+500);
-		light1.setTranslateZ(+500);
+		light1.setTranslateX(+5000);
+		light1.setTranslateY(+5000);
+		light1.setTranslateZ(+5000);
 
 
 		PointLight light2 = new PointLight(Color.WHITE);
 		light1.setTranslateX(0);
 		light1.setTranslateY(0);
-		light1.setTranslateZ(-500);
+		light1.setTranslateZ(-5000);
 
 		PointLight light3 = new PointLight(Color.WHITE);
 		light1.setTranslateX(0);
 		light1.setTranslateY(0);
-		light1.setTranslateZ(+500);
+		light1.setTranslateZ(+5000);
 
 		root3D.getChildren().addAll(sensorGroup, axisGroup, light,light1,light2,light3);
 
@@ -419,8 +421,7 @@ public class SensorPane3D  extends BorderPane {
 			model = SOUNDNET_V1_R5; 
 			break;
 		case SOUNDNET_V2_R1:
-			//TODO
-			model = SOUNDNET_V1_R5; 
+			model = SOUNDNET_V2_R1; 
 			break;
 		default:
 			break;

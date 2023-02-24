@@ -153,6 +153,7 @@ public class MasterCommPane extends BorderPane {
 	    TableColumn<SensorData, String>  sensorTimeCol = new TableColumn<SensorData, String>("Sensor time");
 	    sensorTimeCol.setCellValueFactory(new Callback<CellDataFeatures<SensorData, String>, ObservableValue<String>>() {
 	        public ObservableValue<String> call(CellDataFeatures<SensorData, String> p) {
+	        	//System.out.println("TIMEMILLIS: " + p.getValue().timeMillis); 
 	            // p.getValue() returns the Person instance for a particular TableView row
 	            return new ReadOnlyObjectWrapper((SerialUtils.millis2StringDate(p.getValue().timeMillis.get(), "HH:mm:ss.SSS"))); 
 	        }
@@ -179,14 +180,18 @@ public class MasterCommPane extends BorderPane {
 	 * Set the RTC text. 
 	 */
 	public void setRTCText(SensorData sensormessage) {
+		if (sensormessage.timeMillis==null) return; 
 		for (int i=0; i<sensorsControl.getSensorControls().size(); i++) {
 			if (sensormessage.sensorName.get().equals(sensorsControl.getSensorControls().get(i).getSensorName())) {
-								
-			
+				
+				
+//				//set so that multiple RTC messages don't caused multiple things added to tables...
+//				reqTimeTable.getItems().set(i, sensormessage); 
+				
 				//remove the correct row number., 
 //				final int ii=i+1; 
 				
-				System.out.println("New table item: " + sensormessage.pcMillis + " i " + i + " n items: "+ reqTimeTable.getItems().size()); 
+				//System.out.println("New table item: " + "TIME MILLIS: " + sensormessage.timeMillis + " PC MILLIS: " + sensormessage.pcMillis + " i " + i + " n items: "+ reqTimeTable.getItems().size()); 
 				
 				//if (reqTimeTable.getItems().size()>i) reqTimeTable.getItems().remove(i);
 				reqTimeTable.getItems().add(sensormessage);
@@ -199,7 +204,7 @@ public class MasterCommPane extends BorderPane {
 				return;
 			}
 		}
-		System.err.println("RTC message: could not find sensor name?");
+		System.err.println("RTC message: could not find sensor name or there was a corrupt RTC message");
 	}
 	
 	/**
@@ -232,8 +237,11 @@ public class MasterCommPane extends BorderPane {
 		//System.out.println("Sensormessage flag: " + sensormessage.flag); 
 		switch (sensormessage.flag) {
 
-		case RTC:
+		case RTCACK:
 			setRTCText(sensormessage); 
+			break;
+		case DEVICEID:
+			updateNamePane();
 			break;
 		default:
 			//do nothing
@@ -250,7 +258,14 @@ public class MasterCommPane extends BorderPane {
 		//System.out.print("NO. SENSOR CONTROLS: " +sensorsControl.getSensorControls().size());
 		for (int i=0; i<sensorsControl.getSensorControls().size(); i++) {
 			//System.out.print("SENSOR: " +sensorControl.getSensorControls().get(i).getSensorName());
-			Label label = new Label(sensorsControl.getSensorControls().get(i).getSensorName()); 
+			
+			Label label;
+			if (sensorsControl.getSensorControls().get(i).getSensorUID()!=null) {
+				 label = new Label(String.format("%d",sensorsControl.getSensorControls().get(i).getSensorUID())); 
+			}
+			else {
+				 label = new Label(sensorsControl.getSensorControls().get(i).getSensorName()); 
+			}
 
 			Circle circle = new Circle(10); 
 			
@@ -268,9 +283,7 @@ public class MasterCommPane extends BorderPane {
 		      
 			sensorNamePane.add(label, 0, i);
 			sensorNamePane.add(circle, 1, i);
-
 		}
-		
 	}
 	
 	
