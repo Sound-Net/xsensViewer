@@ -32,7 +32,7 @@ public class SensorData {
 	
 	public SensorData(int[] data, DataTypes flag) {
 		this.flag=flag; 
-		if (flag==DataTypes.RTC) {
+		if (flag==DataTypes.RTC || flag==DataTypes.RTCACK) {
 			this.timeMillis=new SimpleLongProperty(((long) data[0])*1000 +  data[1]/1000); 
 		}
 		this.pcMillis = new SimpleLongProperty(System.currentTimeMillis());

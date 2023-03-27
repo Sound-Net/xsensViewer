@@ -44,7 +44,7 @@ public class SerialMessageParser {
 	 */
 	public void parseLine(String dataLine){
 		
-		System.out.println(dataLine);
+		//System.out.println(dataLine);
 //		if (dataLine.toLowerCase().contains("time")){
 //			System.out.print(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS"))+ " -- ");
 //			System.out.println( " " +dataLine);
@@ -138,10 +138,9 @@ public class SerialMessageParser {
 			if (ary.length>1) {
 				//the RTC is contained in a data message i.e. this is usually non time stamped data. 
 				//the RTC is the time stamp. 
-				sensorData = new SensorData(null); 
-				sensorData.flag = messageFlag;
+//				sensorData = new SensorData(null); 
+//				sensorData.flag = messageFlag;
 				sensorData=parseString(stringData, 2, messageFlag);
-
 			}
 			else {
 				//the RTC is the time stamp. 
@@ -268,8 +267,8 @@ public class SerialMessageParser {
 	 * @return the data contained in the string. 
 	 */
 	public SensorData parseString(String dataLine, int nDataPoints, DataTypes flag){
-		if (flag == DataTypes.RTC) {
-			int[] vals=intArrayParser(dataLine, nDataPoints);
+		if (flag == DataTypes.RTC || flag == DataTypes.RTCACK) {
+			int[] vals=intArrayParser(dataLine.trim(), nDataPoints);
 			if (vals!=null){
 				SensorData sensorComms = new SensorData(vals, flag); 
 				return sensorComms; 
@@ -277,12 +276,12 @@ public class SerialMessageParser {
 			return null;
 		}
 		else {
-		double[] vals=doubleArrayParser(dataLine, nDataPoints);
-		if (vals!=null){
-			SensorData sensorComms = new SensorData(vals, flag); 
-			return sensorComms; 
-		}
-		return null; 
+			double[] vals=doubleArrayParser(dataLine, nDataPoints);
+			if (vals!=null){
+				SensorData sensorComms = new SensorData(vals, flag); 
+				return sensorComms; 
+			}
+			return null; 
 		}
 	}
 

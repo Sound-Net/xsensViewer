@@ -180,11 +180,12 @@ public class MasterCommPane extends BorderPane {
 	 * Set the RTC text. 
 	 */
 	public void setRTCText(SensorData sensormessage) {
-		if (sensormessage.timeMillis==null) return; 
+		if (sensormessage.timeMillis==null) {
+			System.err.println("MasterCommPane: No time associated with RTC message"); 
+			return; 
+		}
 		for (int i=0; i<sensorsControl.getSensorControls().size(); i++) {
 			if (sensormessage.sensorName.get().equals(sensorsControl.getSensorControls().get(i).getSensorName())) {
-				
-				
 //				//set so that multiple RTC messages don't caused multiple things added to tables...
 //				reqTimeTable.getItems().set(i, sensormessage); 
 				
@@ -207,6 +208,7 @@ public class MasterCommPane extends BorderPane {
 		System.err.println("RTC message: could not find sensor name or there was a corrupt RTC message");
 	}
 	
+	
 	/**
 	 * Notifies the MasterCommPane of any updates. 
 	 * @param sensorUpdate - the update type. 
@@ -216,10 +218,10 @@ public class MasterCommPane extends BorderPane {
 		Platform.runLater(()->{
 		updateNamePane(); 
 		updateSensorMessageListeners(); 
-
 		});
 	}
 
+	
 	/**
 	 * Update the listeners for sensor messages. 
 	 */
@@ -236,7 +238,6 @@ public class MasterCommPane extends BorderPane {
 	private void newMasterSensorMessage(SensorData sensormessage) {
 		//System.out.println("Sensormessage flag: " + sensormessage.flag); 
 		switch (sensormessage.flag) {
-
 		case RTCACK:
 			setRTCText(sensormessage); 
 			break;
@@ -250,7 +251,7 @@ public class MasterCommPane extends BorderPane {
 	}
 
 
-	/***
+	/**
 	 * Update the pane that shows active sensor packages. 
 	 */
 	private void updateNamePane() {
@@ -293,13 +294,12 @@ public class MasterCommPane extends BorderPane {
 	 *
 	 */
 	class MasterensorMessageListener implements SensorMessageListener {
-
 		@Override
 		public void newSensorMessage(SensorData sensorComms) {
 			newMasterSensorMessage(sensorComms); 
 		}
-		
 	}
+
 	
 	public void copySelectionToClipboard(final TableView<?> table) {
 	    final Set<Integer> rows = new TreeSet<>();
@@ -326,7 +326,6 @@ public class MasterCommPane extends BorderPane {
 	    final ClipboardContent clipboardContent = new ClipboardContent();
 	    clipboardContent.putString(strb.toString());
 	    Clipboard.getSystemClipboard().setContent(clipboardContent);
-	   
 	}
 //	
 //	/**
