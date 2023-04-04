@@ -199,6 +199,7 @@ public class SensorPane3D  extends BorderPane {
 		if (currentDevice!=null) {
 			switch (currentDevice) {
 			case SOUNDNET_V2_R1:
+				
 				//TODO
 				//SoundNet V2 _ R1
 				headingR= new Rotate(); 
@@ -208,12 +209,12 @@ public class SensorPane3D  extends BorderPane {
 
 				pitchR= new Rotate(); 
 				pitchR.setAxis(new Point3D(1,0,0));
-				pitchR.setAngle(pitch);
+				pitchR.setAngle(-pitch);
 				n.getTransforms().add(pitchR);
 
 				rollR= new Rotate(); 
 				rollR.setAxis(new Point3D(0,0,1));
-				rollR.setAngle(-roll);
+				rollR.setAngle(roll+180);
 				n.getTransforms().add(rollR);
 
 				break;
@@ -391,8 +392,8 @@ public class SensorPane3D  extends BorderPane {
 				break;
 			case SOUNDNET_V2_R1:
 				//TODO
-				meshViews[i].setRotationAxis(new Point3D(0,1,0));
-				meshViews[i].setRotate(90+180); //for R5 sensor.
+				meshViews[i].setRotationAxis(new Point3D(1,0,0));
+				meshViews[i].setRotate(90); //for R5 sensor. 
 				break;
 			default:
 				break;
