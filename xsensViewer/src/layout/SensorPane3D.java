@@ -219,6 +219,8 @@ public class SensorPane3D  extends BorderPane {
 
 				break;
 			case SOUNDNET_V1_R5:
+			case SOUNDNET_V1_R6:
+
 				//
 				//R5
 				headingR= new Rotate(); 
@@ -598,7 +600,7 @@ public class SensorPane3D  extends BorderPane {
 	}
 
 	public void setDeviceModel() {
-		System.out.println("CREATE SENSOR MODEL!!"); 
+		//System.out.println("CREATE SENSOR MODEL!!"); 
 		sensorGroup.getChildren().addAll(createSensor(currentDevice));
 
 	}
