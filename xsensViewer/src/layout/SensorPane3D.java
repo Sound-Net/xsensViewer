@@ -1,9 +1,12 @@
 package layout;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Comparator;
+import java.util.Iterator;
+import org.fxyz3d.importers.Importer3D;
+import org.fxyz3d.importers.Model3D;
 
-import com.interactivemesh.jfx.importer.stl.StlMeshImporter;
 import comms.SerialUtils;
 import javafx.event.EventHandler;
 import javafx.geometry.Point3D;
@@ -22,7 +25,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.DrawMode;
-import javafx.scene.shape.Mesh;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.Sphere;
 import javafx.scene.text.Text;
@@ -40,9 +42,9 @@ public class SensorPane3D  extends BorderPane {
 
 	//	private static final String MESH_FILENAME = "SensorPackageR5.stl";
 
-	public final URL SENSLOGGER_V1 = ClassLoader.getSystemResource("resources/SensorPackage_PLA.stl");
-	public final URL SOUNDNET_V1_R5 = ClassLoader.getSystemResource("resources/SensorPackageR5.stl");
-	public final URL SOUNDNET_V2_R1 = ClassLoader.getSystemResource("resources/SoundNet2 v1_complete_low_res.stl");
+	public final URL SENSLOGGER_V1 = ClassLoader.getSystemResource("resources/SensorPackage_PLA.obj");
+	public final URL SOUNDNET_V1_R5 = ClassLoader.getSystemResource("resources/SensorPackageR5.obj");
+	public final URL SOUNDNET_V2_R1 = ClassLoader.getSystemResource("resources/SoundNet2 v1_complete_low_res.obj");
 
 
 	private static final double MODEL_SCALE_FACTOR = 10;
@@ -340,15 +342,50 @@ public class SensorPane3D  extends BorderPane {
 	}
 
 	static MeshView[] loadMeshViews(URL file) {
+		//System.out.println("LOAD MESH VIEW: " + file);
+
 		//	File file = new File(MESH_FILENAME);
 
-		System.out.println(file.getPath());
+		//		//Java8 
+		//		System.out.println(file.getPath());
+		//
+		//		StlMeshImporter importer = new StlMeshImporter();
+		//		importer.read(file);
+		//		Mesh mesh = importer.getImport();
+		//
+		//		return new MeshView[] {new MeshView(mesh) };
 
-		StlMeshImporter importer = new StlMeshImporter();
-		importer.read(file);
-		Mesh mesh = importer.getImport();
+		try {
 
-		return new MeshView[] {new MeshView(mesh) };
+			Model3D model = Importer3D.load(file);
+
+			System.out.println("Mesh names: " + model.getMeshNames());
+
+			Iterator<String> modelMeshNames = model.getMeshNames().iterator();
+
+
+			MeshView[] meshViews = new MeshView[model.getMeshNames().size()];  
+
+			int count =0; 
+			while (modelMeshNames.hasNext()) {
+				meshViews[count] = (MeshView) model.getMeshView(modelMeshNames.next());
+				count++; 
+			}
+
+			return meshViews;
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			System.out.println("ERROR LOADING 3D MODEL");
+			e.printStackTrace();
+		}
+
+
+		return null; 
+
+
+		//Java 11+
+
 	} 
 
 
@@ -356,7 +393,10 @@ public class SensorPane3D  extends BorderPane {
 
 		this.sensorGroup.getChildren().clear();
 
-		if (deviceType == null) return null; 
+		if (deviceType == null) {
+			System.out.println("The device type is null");
+			return null; 
+		}
 		//		URL url = getClass().getResource(MESH_FILENAME);
 		//		
 		//		System.out.println(url.getPath());
@@ -377,6 +417,7 @@ public class SensorPane3D  extends BorderPane {
 		//		File file = new File(url.getPath());
 
 		URL model = getDeviceModelURL(deviceType); 		
+		
 
 		MeshView[] meshViews = loadMeshViews(model);
 
@@ -389,8 +430,9 @@ public class SensorPane3D  extends BorderPane {
 				meshViews[i].setRotate(90); //for R5 sensor. 
 				break;
 			case SOUNDNET_V1_R5:
-				meshViews[i].setRotationAxis(new Point3D(0,1,0));
-				meshViews[i].setRotate(90+180); //for R5 sensor. 
+			case SOUNDNET_V1_R6:
+				meshViews[i].setRotationAxis(new Point3D(1,0,1));
+				meshViews[i].setRotate(180); //for R5 sensor. 
 				break;
 			case SOUNDNET_V2_R1:
 				//TODO
@@ -421,6 +463,7 @@ public class SensorPane3D  extends BorderPane {
 			model = SENSLOGGER_V1; 
 			break;
 		case SOUNDNET_V1_R5:
+		case SOUNDNET_V1_R6:
 			model = SOUNDNET_V1_R5; 
 			break;
 		case SOUNDNET_V2_R1:

@@ -1,22 +1,14 @@
 package main;
 
-import java.awt.Label;
 import java.io.IOException;
-import java.net.URL;
-
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.application.*; 
-import jfxtras.styles.jmetro.JMetro;
-import jfxtras.styles.jmetro.JMetroStyleClass;
-import jfxtras.styles.jmetro.Style;
-import layout.SerialSensorPane;
 import layout.SensorView;
 
 /**

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -445,7 +446,9 @@ public class SerialSensorControl implements SensorControl {
 		//		DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS");
 		//		formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 
-		String timeS = 	LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS"));
+		
+		//make sure this is UTC time!
+		String timeS = 	LocalDateTime.now(ZoneOffset.UTC).format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS"));
 
 		System.out.println("Send time to device: " + timeS);
 		//convert thre string to a byte array 

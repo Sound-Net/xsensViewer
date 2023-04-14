@@ -1,11 +1,11 @@
 package layout.utils;
 
-import com.sun.javafx.scene.control.skin.TabPaneSkin;
 
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Side;
 import javafx.scene.control.Button;
+import javafx.scene.control.skin.TabPaneSkin;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 

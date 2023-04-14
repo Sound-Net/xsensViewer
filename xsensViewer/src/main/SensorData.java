@@ -56,6 +56,7 @@ public class SensorData {
 			this.temperature=new SimpleDoubleProperty(data[1]); 
 		}
 		if (flag==DataTypes.BATTERYDATA) {
+			//System.out.println("Battery data: " + data[0] + " " + data[1]);
 			this.batteryLevel=new SimpleDoubleProperty(data[0]); 
 			this.batteryLevelV=new SimpleDoubleProperty(data[1]); 
 		}
