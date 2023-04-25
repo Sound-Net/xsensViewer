@@ -36,7 +36,11 @@ public enum XsMessageID  {
 	XMID_ReqSDFormat(0x68), 
 	XMID_ReqSDSize(0x69),
 	XMID_ReqDeviceType (0x6A),
-	XMID_DeviceType(0x6B);
+	XMID_DeviceType(0x6B),
+	XMID_ReqFirmwareVersion (0x6C),
+	XMID_FirmwareVersion (0x6D);
+
+
 
 	/**
 	 * The unsigned byte value represented as an int. 

@@ -11,6 +11,7 @@ import java.time.format.DateTimeFormatter;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.SimpleStringProperty;
 
 /**
  * Figures out what to do with serial message.
@@ -21,7 +22,8 @@ public class SerialMessageParser {
 
 	
 	public enum DataTypes {
-		EULAR_ANGLES, QUATERNION, PRESSURE_TEMPERATURE, BATTERYDATA, RGBDATA, MTDATA, MTMESSAGE, TEMPERATURE, LIGHT_SPECTRUM, SD_USED_SPACE, NO_DATA, RTC, RTCACK, DEVICEID, DEVICETYPE
+		EULAR_ANGLES, QUATERNION, PRESSURE_TEMPERATURE, BATTERYDATA, RGBDATA, MTDATA, MTMESSAGE, TEMPERATURE, LIGHT_SPECTRUM,
+		SD_USED_SPACE, NO_DATA, RTC, RTCACK, DEVICEID, DEVICETYPE, FIRMWARE_VERSION
 	}
 
 			
@@ -130,6 +132,10 @@ public class SerialMessageParser {
 			sensorData.flag = DataTypes.DEVICETYPE;
 			sensorData.deviceType = new SimpleLongProperty(deviceType);
 			break;
+		case FIRMWARE_VERSION:
+			String firmwareVersion = stringData.trim().replace("\n", ""); 
+			sensorData = new SensorData(new int[1], DataTypes.FIRMWARE_VERSION); 
+			sensorData.firmwareVersion = new SimpleStringProperty(firmwareVersion);
 		case MTDATA:
 			//nothing
 			break;
@@ -256,6 +262,9 @@ public class SerialMessageParser {
 		}
 		if (ary[0].trim().equals("DID")) {
 			flag=DataTypes.DEVICETYPE; 
+		}
+		if (ary[0].trim().equals("FV")) {
+			flag=DataTypes.FIRMWARE_VERSION; 
 		}
 		
 		return flag; 

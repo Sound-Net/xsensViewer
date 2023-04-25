@@ -10,6 +10,7 @@ import comms.SerialMessageParser.DataTypes;
 import comms.SerialUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBase;
 import javafx.scene.control.ComboBox;
@@ -114,6 +115,11 @@ public class SerialSensorPane extends BorderPane {
 
 	private Button setTimeButton;
 
+	/**
+	 * Shows the current firmware versions
+	 */
+	private Label firmwareLabel;
+
 	public SerialSensorPane(SerialSensorControl sensorControl){
 		
 		
@@ -144,11 +150,17 @@ public class SerialSensorPane extends BorderPane {
 		idLabel= new Label(); 
 		idLabel.setTextAlignment(TextAlignment.CENTER);
 		idLabel.setAlignment(Pos.CENTER_LEFT);
-		
+//		idLabel.setTooltip(new Tooltip("The ID of the sensor package (also the ID of the xsens device)"));
+
+		firmwareLabel= new Label(); 
+		firmwareLabel.setTextAlignment(TextAlignment.CENTER);
+		firmwareLabel.setAlignment(Pos.CENTER_LEFT);
+//		firmwareLabel.setTooltip(new Tooltip("The current firmware version"));
+
 		HBox sensorIDLabels = new HBox();
 		sensorIDLabels.setSpacing(5);
 		sensorIDLabels.setAlignment(Pos.BOTTOM_LEFT);
-		sensorIDLabels.getChildren().addAll(sensorLabel, idLabel);
+		sensorIDLabels.getChildren().addAll(sensorLabel, idLabel, firmwareLabel);
 		
 		leftHolder.getChildren().addAll(sensorIDLabels); 
 
@@ -511,6 +523,12 @@ public class SerialSensorPane extends BorderPane {
 		if (sensormessage.deviceType!=null) {
 			this.sensorControl.getDeviceManager().setCurrentDevice(DeviceManager.getDeviceType(sensormessage.deviceType.get())); 
 			this.sensorPane3D.setDeviceType(this.sensorControl.getDeviceManager().getCurrentDevice()); 
+		}
+		
+		if (sensormessage.firmwareVersion!=null) {
+			this.sensorControl.getDeviceManager().setCurrentFirmware(sensormessage.firmwareVersion.get()); 
+			firmwareLabel.setText(sensormessage.firmwareVersion.get()); 
+			this.firmwareLabel.setTooltip(new Tooltip("Firmware version: "+ sensormessage.firmwareVersion));
 		}
 		
 		if (sensormessage.flag == DataTypes.MTMESSAGE) {

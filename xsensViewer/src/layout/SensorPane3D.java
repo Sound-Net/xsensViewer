@@ -206,6 +206,10 @@ public class SensorPane3D  extends BorderPane {
 				//SoundNet V2 _ R1
 				headingR= new Rotate(); 
 				headingR.setAxis(new Point3D(0,1,0));
+				
+				
+				
+				
 				headingR.setAngle(-yaw);
 				n.getTransforms().add(headingR);
 
@@ -219,6 +223,11 @@ public class SensorPane3D  extends BorderPane {
 				rollR.setAngle(roll+180);
 				n.getTransforms().add(rollR);
 
+				
+				
+				
+				
+				
 				break;
 			case SOUNDNET_V1_R5:
 			case SOUNDNET_V1_R6:
@@ -322,7 +331,7 @@ public class SensorPane3D  extends BorderPane {
 		SubScene subScene = new SubScene(root3D, 500,500, true, SceneAntialiasing.BALANCED);
 		subScene.widthProperty().bind(this.widthProperty());
 		subScene.heightProperty().bind(this.heightProperty());
-		subScene.setDepthTest(DepthTest.ENABLE);
+		//subScene.setDepthTest(DepthTest.ENABLE);
 
 		subScene.setFill(Color.BLACK);
 		subScene.setCamera(camera);
