@@ -172,6 +172,11 @@ public class SensorData {
 	 */
 	public SimpleLongProperty deviceType;
 
+	/**
+	 * The current firmware version. 
+	 */
+	public SimpleStringProperty firmwareVersion;
+
 
 	/**
 	 * Set the message time value in millis datenum

@@ -295,7 +295,11 @@ public class SerialSensorControl implements SensorControl {
 							sendMessage(XsMessageID.XMID_ReqDid);
 							Thread.sleep(100);
 							sendMessage(XsMessageID.XMID_ReqDeviceType);
+							Thread.sleep(100);
+							sendMessage(XsMessageID.XMID_ReqFirmwareVersion);
+
 							sendMessage(XsMessageID.XMID_GotoMeasurement);
+
 						}
 						
 						//System.out.println("Send output stream: 1" + isCancelled());

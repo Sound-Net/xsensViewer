@@ -8,8 +8,14 @@ package main;
 public class DeviceManager {
 	
 	DeviceType currentDevice = null;
-		
 	
+	/**
+	 * The current firmware version of the connected device. 
+	 */
+	private String firmwareVersion;
+		
+
+
 	public enum DeviceType {
 		SENSLOGGER_V1(200), SOUNDNET_V2_R1(10), SOUNDNET_V2_R2(11), SOUNDNET_V2_R3(12), SOUNDNET_V1_R1(1), SOUNDNET_V1_R2(2), SOUNDNET_V1_R3(3), 
 		SOUNDNET_V1_R4(4), SOUNDNET_V1_R5(5), SOUNDNET_V1_R6(6), SOUNDNET_V1_R7(7), SOUNDNET_V1_R8(8);
@@ -51,6 +57,18 @@ public class DeviceManager {
 	 */
 	public void setCurrentDevice(DeviceType currentDevice) {
 		this.currentDevice = currentDevice;
+	}
+
+	public void setCurrentFirmware(String string) {
+		this.firmwareVersion = string;
+	}
+	
+	/**
+	 * Get the current firmware version of the connected device. 
+	 * @return the current firmware version of the connected device. 
+	 */
+	public String getFirmwareVersion() {
+		return firmwareVersion;
 	}
 
 	
