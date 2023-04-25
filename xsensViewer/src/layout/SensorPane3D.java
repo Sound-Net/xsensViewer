@@ -471,7 +471,6 @@ public class SensorPane3D  extends BorderPane {
 			break;
 		default:
 			break;
-
 		}
 
 		return model; 
@@ -644,11 +643,14 @@ public class SensorPane3D  extends BorderPane {
 
 	public void setDeviceModel() {
 		//System.out.println("CREATE SENSOR MODEL!!"); 
+		if (currentDevice!=null) {
 		sensorGroup.getChildren().addAll(createSensor(currentDevice));
+		}
 
 	}
 
 	public void setDeviceType(DeviceType currentDeviceID) {
+		System.out.println("SET DEVICE TYPE: " + currentDeviceID); 
 		this.currentDevice=currentDeviceID; 
 
 		setDeviceModel() ; 
