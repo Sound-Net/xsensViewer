@@ -44,7 +44,7 @@ public class SensorPane3D  extends BorderPane {
 
 	public final URL SENSLOGGER_V1 = ClassLoader.getSystemResource("resources/SensorPackage_PLA.obj");
 	public final URL SOUNDNET_V1_R5 = ClassLoader.getSystemResource("resources/SensorPackageR5.obj");
-	public final URL SOUNDNET_V2_R1 = ClassLoader.getSystemResource("resources/SoundNet2 v1_complete_low_res.obj");
+	public final URL SOUNDNET_V2_R1 = ClassLoader.getSystemResource("resources/SoundNet2v1.obj");
 
 
 	private static final double MODEL_SCALE_FACTOR = 10;
@@ -351,7 +351,7 @@ public class SensorPane3D  extends BorderPane {
 	}
 
 	static MeshView[] loadMeshViews(URL file) {
-		//System.out.println("LOAD MESH VIEW: " + file);
+		System.out.println("LOAD MESH VIEW: " + file);
 
 		//	File file = new File(MESH_FILENAME);
 
@@ -660,9 +660,11 @@ public class SensorPane3D  extends BorderPane {
 
 	public void setDeviceType(DeviceType currentDeviceID) {
 		System.out.println("SET DEVICE TYPE: " + currentDeviceID); 
-		this.currentDevice=currentDeviceID; 
-
-		setDeviceModel() ; 
+		
+		if (this.currentDevice!=currentDeviceID) {
+			this.currentDevice=currentDeviceID; 
+			setDeviceModel() ; 
+		}
 	}
 
 
