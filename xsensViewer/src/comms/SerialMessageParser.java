@@ -46,7 +46,7 @@ public class SerialMessageParser {
 	 */
 	public void parseLine(String dataLine){
 		
-		System.out.println(dataLine);
+//		System.out.println(dataLine);
 //		if (dataLine.toLowerCase().contains("time")){
 //			System.out.print(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss.SSS"))+ " -- ");
 //			System.out.println( " " +dataLine);

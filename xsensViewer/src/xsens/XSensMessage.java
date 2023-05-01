@@ -1,7 +1,12 @@
 package xsens;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /**
- * Set of messages which can be sent ot the xsens sensor. 
+ * Set of messages which can be sent to the xsens sensor. 
  * @author Jamie Macaulay
  *
  */
@@ -84,6 +89,68 @@ public class XSensMessage {
 	 	}
 	 }
 	 
+	 
+	/**
+	 * Get an XBUSMesage object from rw bytes 
+	 * @param raw - the raw bytes
+	 * @return the XBUSMesage containing the data. 
+	 */
+	public static XBusMessage XbusMessage_getXBusMessage(int[] raw){
+		
+		if (raw.length<5) {
+			System.err.println("XbusMessage_getXBusMessage: xbus message length is less than 5"); 
+			return null; 
+		}
+		
+		if (raw[0]!=XBUS_PREAMBLE) {
+			System.err.println("XbusMessage_getXBusMessage: xbus message length does not have a preamble"); 
+			return null; 
+		}
+		
+		
+		XsMessageID messageID = XsMessageID.getXsMessageID(raw[2]); 
+		
+		if (messageID == null) {
+			System.err.println("XbusMessage_getXBusMessage: xbus message does not have a valid XsMessageID"); 
+			return null; 
+		}
+		
+		
+		XBusMessage xBusMessage = new XBusMessage();
+		xBusMessage.mid = messageID; 
+		
+		if (raw[3] == 0xFF) {
+			//extended message length 
+			
+			//TODO
+			System.err.println("XbusMessage_getXBusMessage: Extended message length is not yet supported"); 
+
+			return null; 
+			
+		}
+		else {
+			//standard message length
+			//date length
+			xBusMessage.len = raw[3]; 
+			
+			//the message data
+			if (xBusMessage.len>0) {
+				xBusMessage.charBufferRx = Arrays.copyOfRange(raw, 4, xBusMessage.len +4 ); 
+			}
+			else {
+				xBusMessage.charBufferRx = null; 
+			}
+		}
+		
+		xBusMessage.checksum = raw[raw.length-1]; 
+		
+		
+		return xBusMessage; 
+		
+	}
+	
+
+	 
 	
 	/**
 	 * \brief Format a message into the raw Xbus format ready for transmission to
@@ -143,7 +210,166 @@ public class XSensMessage {
 
 		return count;
 	}
+	
+	
+	/**
+	 * Format data for option flags. Options flags are used to set paramters in the 
+	 * xsens device. 
+	 * @param data - the data portion of an XSensMessage
+	 * @param setFlags - the options flags to set (can be null).
+	 * @param clearFlags - the options flags to clear (can be null). 
+	 * @return the number of bytes of data (always 8). 
+	 */
+	public static int format_OptionConfig(int[] data, XsOptionID[] setFlags, XsOptionID[] clearFlags) {
+	
+		int setFlagInt = 0; 
+		int clearFlagInt = 0; 
+		
+		if (setFlags != null) {
+			for (int i=0;i<setFlags.length; i++) {
+				setFlagInt = setFlagInt | setFlags[i].getValue();
+			}
+		}
+		
+		if (clearFlags !=null) {
+			for (int i=0;i<setFlags.length; i++) {
+				clearFlagInt = clearFlagInt | clearFlags[i].getValue();
+			}
+		}
+		
+		
+		ByteBuffer b = ByteBuffer.allocate(8);
+		b.order(ByteOrder.BIG_ENDIAN); // optional, the initial order of a byte buffer is always BIG_ENDIAN.
+		b.putInt(setFlagInt);
+		b.putInt(clearFlagInt);
 
+		byte[] result = b.array();
+		for (int i=0;i<result.length; i++) {
+			//System.out.println(" result[i]: " +  result[i]);
+			data[i] = result[i];
+		}
+		
+		return result.length;
+		
+	}
+	
+	
+	/**
+	 * Get the options flags from xsens message. Returns a list of the flags that have been set in the 
+	 * sensor. 
+	 * @param data - input data bytes. 
+	 * @return the options flags which have been set. 
+	 */
+	public static ArrayList<XsOptionID> get_OptionConfig(int[] data) {
+				
+		ByteBuffer b = ByteBuffer.allocate(4);
+		b.order(ByteOrder.BIG_ENDIAN); // optional, the initial order of a byte buffer is always BIG_ENDIAN.
+		
+		for (int a = 0; a<data.length; a++) {
+			b.put((byte) data[a]);
+		}
+		b.rewind(); //important to reset. 
+		
+		//Now we have our Integer.BYTES we get the individual flags
+		XsOptionID[] values = XsOptionID.values(); 
+		
+		ArrayList<XsOptionID> setOptions = new 	ArrayList<XsOptionID>(); 
+		
+		int optionsMap =  b.getInt();
+		
+//		System.out.println("Binary Map: " + Integer.toString(optionsMap, 2) + " " + optionsMap);
+
+		for (XsOptionID anOptionID : values) {
+
+			if ((anOptionID.getValue() & optionsMap) != 0){
+				setOptions.add(anOptionID);
+			}
+		}
+				
+		return setOptions; 
+	}
+	
+	/**
+	 * Set the output configuration for a SetOutputConfiguration message. The output configuration is, for example, 
+	 * whether to return Euler angles or quaternions. 
+	 * @param data - the data portion of an XSensMessage
+	 * @param setFlags - the output configuration flags
+	 * @param clearFlags - the corresponding desired output frequencies
+	 * @return the number of bytes of output data
+	 */
+	public static int format_OutputConfiguration(int[] data, XsDataIdentifier[] outputTypes, int[] freq) {
+		
+		if (outputTypes != null) {
+			//set up the byte buffer
+			ByteBuffer b = ByteBuffer.allocate(4*outputTypes.length);
+			b.order(ByteOrder.BIG_ENDIAN); // optional, the initial order of a byte buffer is always BIG_ENDIAN.
+
+			for (int i=0;i<outputTypes.length; i++) {
+				
+				//the first 2 bytes are the output flag, the last two bytes are the frequency. 
+				
+				//bit shift the flag by eight to be in the first bytes. 
+				int outputInt = outputTypes[i].getValue() << 16;  
+				
+				//now set the bits of the output frequency
+				outputInt = outputInt | freq[i]; 
+				
+				b.putInt(outputInt); 
+			}
+			
+			byte[] result = b.array();
+			for (int i=0;i<result.length; i++) {
+				data[i] = result[i];
+				//System.out.println("output byte: " + result[i]);
+			}
+			
+			return result.length; 
+		}
+		else {
+			return 0;
+		}
+	}
+	
+	
+	/**
+	 * Get the options flags from xsens message. Returns a list of the flags that have been set in the 
+	 * sensor. 
+	 * @param data - input data bytes. 
+	 * @return the options flags which have been set. 
+	 */
+	public static ArrayList<XsDataIdentifier> get_OutputConfig(int[] data) {
+				
+		ByteBuffer b = ByteBuffer.allocate(data.length);
+		b.order(ByteOrder.BIG_ENDIAN); // optional, the initial order of a byte buffer is always BIG_ENDIAN.
+		
+		for (int a = 0; a<data.length; a++) {
+			b.put((byte) data[a]);
+		}
+		b.rewind(); //important to reset. 
+		
+		int nOuputs = data.length/4; 
+		
+		
+		ArrayList<XsDataIdentifier> outputConfigs = new ArrayList<XsDataIdentifier>(); 
+		
+		XsDataIdentifier[] configValues =  XsDataIdentifier.values();
+		int flag ;
+		float freq;
+		for (int i =0; i<nOuputs ; i++) {
+			flag  = b.getShort();
+			freq  = b.getShort();
+			
+			for (int j=0; j<configValues.length; j++) {
+				if (configValues[j].getValue() == flag) {
+					outputConfigs.add(configValues[j]);
+					configValues[j].setFrequency(freq);
+				}
+			}
+		}
+				
+		return outputConfigs; 
+	}
+	
 	
 	
 	/**
@@ -155,20 +381,61 @@ public class XSensMessage {
     	//and goToConfig is [250 255 48 0 209]
     	//and go to NoRotation  [250 255 192 0 65]
     	
+    	System.out.println("Simple XMID_GotoMeasurement");
+
     	int[] raw = new int[255]; 
     	
     	XBusMessage mtest = new XBusMessage(); 
-    	//mtest.mid=XMID_GotoMeasurement;
-    	mtest.mid=XsMessageID.XMID_ReqOutputConfig;
-
+    	mtest.mid=XsMessageID.XMID_GotoMeasurement;
+//    	mtest.mid=XsMessageID.XMID_ReqOutputConfig;
+    	
     	
     	int len = XbusMessage_format(raw,  mtest);
     	
     	System.out.println("Raw data "+ len + " : ");
     	for (int i=0; i<len+1; i++) {
-    		System.out.print(" " + raw[i]);
+    		System.out.print(raw[i]+ " ");
     	}
+		System.out.println(" ");
+		
+		
+
+
+    	//lets send a output configuration - see page 23 of low level communication protocal. 
+    	//Example → message for enabling AHS: FA FF 48 08 00 00 00 10 00 00 00 00 A1.
+    	System.out.println("Set options flag");
+
+    	XBusMessage mtOptionsTest = new XBusMessage(); 
+    	
+    	mtOptionsTest.mid=XsMessageID.XMID_SetOptionFlags;
+    	mtOptionsTest.len = format_OptionConfig(mtOptionsTest.charBufferRx,new XsOptionID[] {XsOptionID.DisableAutoStore}, new XsOptionID[] {XsOptionID.DisableAutoMeasurement}); 
+    	mtOptionsTest.len = format_OptionConfig(mtOptionsTest.charBufferRx,new XsOptionID[] {XsOptionID.EnableAhs}, null); 
+
+    	len = XbusMessage_format(raw,  mtOptionsTest);
+
+       	System.out.println("Raw data "+ len + " : ");
+    	for (int i=0; i<len+1; i++) {
+    		System.out.print(String.format("%02X ",  (byte) raw[i]));
+    	}
+    	
+    	
+    	System.out.println("Set output configuration");
+    	
+    	XBusMessage mtOutconfigTest = new XBusMessage(); 
+    	
+    	mtOutconfigTest.mid=XsMessageID.XMID_OutputConfig;
+    	
+    	mtOutconfigTest.len = format_OutputConfiguration(mtOutconfigTest.charBufferRx,new XsDataIdentifier[] {XsDataIdentifier.XDI_Quaternion}, new int[] {25}); 
+
+    	len = XbusMessage_format(raw,  mtOutconfigTest);
+
+     	System.out.println("Raw data "+ len + " : ");
+    	for (int i=0; i<len+1; i++) {
+    		System.out.print(String.format("%02X ",  (byte) raw[i]));
+    	}
+    	
 	}
+
 	
 }
 	

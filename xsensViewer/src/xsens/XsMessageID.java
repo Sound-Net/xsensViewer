@@ -38,7 +38,11 @@ public enum XsMessageID  {
 	XMID_ReqDeviceType (0x6A),
 	XMID_DeviceType(0x6B),
 	XMID_ReqFirmwareVersion (0x6C),
-	XMID_FirmwareVersion (0x6D);
+	XMID_FirmwareVersion (0x6D),
+	XMID_SetOptionFlags (0x48),
+	XMID_SetOptionFlagAck (0x49),
+	XMID_ReqOptionFlags (0x48),
+	XMID_ReqOptionFlagsAck (0x49);
 
 
 
@@ -65,6 +69,22 @@ public enum XsMessageID  {
 	 */
 	public byte getSignedByte() {
 		return (byte) ((bytevalue << 24) >> 24); 
+	}
+
+	/**
+	 * 
+	 * Get the XsMessageID enum from an int. 
+	 * @param ID -  the XsMessageID identifier. 
+	 * @return the corresponding XsMessageID enum. 
+	 */
+	public static XsMessageID getXsMessageID(int ID) {
+		XsMessageID[] values = XsMessageID.values();
+		for (XsMessageID aXSMessageID : values) {
+			if (aXSMessageID.getValue() == ID) {
+				return aXSMessageID; 
+			}; 
+		}
+		return null; 
 	}
 
 }

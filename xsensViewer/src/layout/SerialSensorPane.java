@@ -92,6 +92,12 @@ public class SerialSensorPane extends BorderPane {
 	 * Pane which sends commands to the sensor package. 
 	 */
 	private XmidCommandPane commandPane;
+	
+	/**
+	 * Pane which sets options in xsens snesor. 
+	 */
+	private XmidOptionsPane optionsPane;
+	
 
 	private Label sdLabel;
 
@@ -172,6 +178,13 @@ public class SerialSensorPane extends BorderPane {
 		leftHolder.getChildren().add(advLabel); 
 
 		leftHolder.getChildren().add(this.commandPane = new XmidCommandPane(sensorControl)); 
+		
+		Label advOptionsLabel = new  Label("Advanced Options"); 
+		advOptionsLabel.setPadding(new Insets(10,0,0,0));
+		SensorView.titlelabel(advOptionsLabel);
+		leftHolder.getChildren().add(advOptionsLabel); 
+		leftHolder.getChildren().add(this.optionsPane = new XmidOptionsPane(sensorControl)); 
+		optionsPane.setOptionsDisabled(true);
 
 		sensorControl.addSensorMessageListener((sensormessage)->{
 			setEulerData(sensormessage);
@@ -498,7 +511,7 @@ public class SerialSensorPane extends BorderPane {
 		if (sensormessage.batteryLevel!=null) {
 			double batteryLevel=sensormessage.batteryLevel.get(); 
 			
-			System.out.println("Battary level: " + sensormessage.batteryLevel + "  " + sensormessage.batteryLevelV);
+			//System.out.println("Battary level: " + sensormessage.batteryLevel + "  " + sensormessage.batteryLevelV);
 			if (batteryLevel>98.) {
 				batteryLevel=100.; 
 			}
@@ -534,8 +547,9 @@ public class SerialSensorPane extends BorderPane {
 		if (sensormessage.flag == DataTypes.MTMESSAGE) {
 			String dataStr="MTMessage: "; 
 			for (int i=0; i<sensormessage.mtMessage.length; i++) {
-				dataStr+=(sensormessage.mtMessage[i] +  " "); 
+				dataStr+=(String.format("%02X ", (byte) sensormessage.mtMessage[i]) +  " "); 
 			}
+	    	
 			commandPane.setMessageBackLabelText(dataStr);
 		}
 

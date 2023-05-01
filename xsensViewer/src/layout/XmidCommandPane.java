@@ -5,6 +5,8 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
@@ -18,7 +20,7 @@ import xsens.XsMessageID;
  * @author Jamie Macaulay
  *
  */
-public class XmidCommandPane extends SerialCommPane {
+public class XmidCommandPane extends BorderPane {
 	
 	/**
 	 * The port names
@@ -37,7 +39,7 @@ public class XmidCommandPane extends SerialCommPane {
 	
 	
 	public XmidCommandPane(SerialSensorControl sensorControl) {
-		this.sensorControl=sensorControl; 
+		this.sensorControl=sensorControl;
 		this.setCenter(createCommandPane());
 	}
 	
@@ -52,7 +54,10 @@ public class XmidCommandPane extends SerialCommPane {
 		        XsMessageID.XMID_ReqFilterProfile,
 		        XsMessageID.XMID_ReqDid,
 		        XsMessageID.XMID_ReqDeviceType,
-		        XsMessageID.XMID_ReqSDSize
+		        XsMessageID.XMID_ReqSDSize,
+		        XsMessageID.XMID_ReqOutputConfig,
+		        XsMessageID.XMID_ReqOptionFlags
+
 		    );
 		command = new ComboBox<XsMessageID>(commandOptions);
 		command.getSelectionModel().select(0);
@@ -62,6 +67,8 @@ public class XmidCommandPane extends SerialCommPane {
 			System.out.println("Sending message: " + command.getValue());
 			sensorControl.sendMessage(command.getValue()); 
 		});
+		
+		
 		send.setMinWidth(90);
 		//make combo box same height as button
 		command.prefHeightProperty().bind(send.heightProperty());
@@ -93,6 +100,7 @@ public class XmidCommandPane extends SerialCommPane {
 	 */
 	public void setMessageBackLabelText(String text) {
 		 messageBackLabel.setText(text);
+		 messageBackLabel.setTooltip(new Tooltip(text));
 	}
 	
 }

@@ -378,7 +378,7 @@ public class SerialSensorControl implements SensorControl {
 
 
 	/**
-	 * Send a message to the sensor. This only supports sending a command with no associated data
+	 * Send a message to the sensor.
 	 * @param the command to send. 
 	 */
 	public void sendMessage(XsMessageID value, int[] data) {

@@ -30,6 +30,8 @@ import javafx.scene.shape.Sphere;
 import javafx.scene.text.Text;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import main.DeviceManager.DeviceType;
 import main.SensorData;
 
@@ -201,15 +203,15 @@ public class SensorPane3D  extends BorderPane {
 		if (currentDevice!=null) {
 			switch (currentDevice) {
 			case SOUNDNET_V2_R1:
-				
+
 				//TODO
 				//SoundNet V2 _ R1
 				headingR= new Rotate(); 
 				headingR.setAxis(new Point3D(0,1,0));
-				
-				
-				
-				
+
+
+
+
 				headingR.setAngle(-yaw);
 				n.getTransforms().add(headingR);
 
@@ -223,11 +225,11 @@ public class SensorPane3D  extends BorderPane {
 				rollR.setAngle(roll+180);
 				n.getTransforms().add(rollR);
 
-				
-				
-				
-				
-				
+
+
+
+
+
 				break;
 			case SOUNDNET_V1_R5:
 			case SOUNDNET_V1_R6:
@@ -366,9 +368,14 @@ public class SensorPane3D  extends BorderPane {
 
 		try {
 
+			long time1 = System.currentTimeMillis();
+
 			Model3D model = Importer3D.load(file);
 
-			System.out.println("Mesh names: " + model.getMeshNames());
+			long time2 = System.currentTimeMillis();
+
+
+			System.out.println("Load time " + (time2-time1)  + "   Mesh names: " + model.getMeshNames());
 
 			Iterator<String> modelMeshNames = model.getMeshNames().iterator();
 
@@ -400,8 +407,6 @@ public class SensorPane3D  extends BorderPane {
 
 	private MeshView[] createSensor(DeviceType deviceType) {
 
-		this.sensorGroup.getChildren().clear();
-
 		if (deviceType == null) {
 			System.out.println("The device type is null");
 			return null; 
@@ -426,7 +431,7 @@ public class SensorPane3D  extends BorderPane {
 		//		File file = new File(url.getPath());
 
 		URL model = getDeviceModelURL(deviceType); 		
-		
+
 
 		MeshView[] meshViews = loadMeshViews(model);
 
@@ -451,7 +456,7 @@ public class SensorPane3D  extends BorderPane {
 			default:
 				break;
 			}
-		
+
 			meshViews[i].setScaleX(MODEL_SCALE_FACTOR);
 			meshViews[i].setScaleY(MODEL_SCALE_FACTOR);
 			meshViews[i].setScaleZ(MODEL_SCALE_FACTOR);
@@ -469,6 +474,7 @@ public class SensorPane3D  extends BorderPane {
 		URL model = null; 
 		switch (deviceType) {
 		case SENSLOGGER_V1:
+			//			System.out.println("Model URL: " + SENSLOGGER_V1); 
 			model = SENSLOGGER_V1; 
 			break;
 		case SOUNDNET_V1_R5:
@@ -653,19 +659,68 @@ public class SensorPane3D  extends BorderPane {
 	public void setDeviceModel() {
 		//System.out.println("CREATE SENSOR MODEL!!"); 
 		if (currentDevice!=null) {
-		sensorGroup.getChildren().addAll(createSensor(currentDevice));
+			//			sensorGroup.getChildren().addAll(createSensor(currentDevice));
+			this.sensorGroup.getChildren().clear();
+
+			MeshViewLoadTask task = new MeshViewLoadTask();
+
+			task.setOnSucceeded((e)->{
+				System.out.println("The task has completed!: " + task.getMeshView()); 
+				Platform.runLater(()->{
+					sensorGroup.getChildren().addAll(task.getMeshView()); 
+				}); 
+			});
+
+			Thread th = new Thread(task);
+			th.setDaemon(true);
+			th.start();
 		}
+
 
 	}
 
 	public void setDeviceType(DeviceType currentDeviceID) {
-		System.out.println("SET DEVICE TYPE: " + currentDeviceID); 
-		
+		//System.out.println("SET DEVICE TYPE: " + currentDeviceID); 
+
 		if (this.currentDevice!=currentDeviceID) {
 			this.currentDevice=currentDeviceID; 
 			setDeviceModel() ; 
 		}
 	}
+
+	class MeshViewLoadTask extends Task<Integer> {
+
+		private MeshView[] meshView;
+
+		public MeshView[] getMeshView() {
+			return meshView;
+		}
+
+		@Override protected Integer call() throws Exception {
+			try {
+				this.meshView = createSensor(currentDevice);
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+			}
+			return 0;
+		}
+
+		//		@Override protected void succeeded() {
+		//			super.succeeded();
+		//			updateMessage("Done!");
+		//		}
+		//
+		//		@Override protected void cancelled() {
+		//			super.cancelled();
+		//			updateMessage("Cancelled!");
+		//		}
+		//
+		//		@Override protected void failed() {
+		//			super.failed();
+		//			updateMessage("Failed!");
+		//		}
+	};
 
 
 }

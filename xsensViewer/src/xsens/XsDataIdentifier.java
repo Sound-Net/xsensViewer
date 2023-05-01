@@ -1,11 +1,12 @@
 package xsens;
 
 /**
- * Identifier for data contained in an MTData packaet. 
+ * Identifier for data contained in an MTData packet. 
  * @author Jamie Macaulay
  *
  */
 public enum XsDataIdentifier {
+	
 	
 	// XDI is a flag for the data a message contains. 
 	 XDI_PacketCounter ( 0x1020),
@@ -26,11 +27,33 @@ public enum XsDataIdentifier {
 	 XDI_LightSpectrum (0x2090),
 	 XDI_SDCardUsed    (0x3000);
 
+	
 	private int value;
+	
+	/**
+	 * The frequency of the data output. 
+	 */
+	private Float frequency = null; 
+
+	/**
+	 * Get the frequency in samples per second of the ouput data. 
+	 * @return the frequency in samples per second. 
+	 */
+	public Float getFrequency() {
+		return frequency;
+	}
+
+	public void setFrequency(Float frequency) {
+		this.frequency = frequency;
+	}
+
+
 
 	XsDataIdentifier(int value){
 		this.value=value; 
 	}
+	
+	
 	
 	public int getValue() {
 		return value; 
