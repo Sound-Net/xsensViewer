@@ -21,6 +21,7 @@ public enum XsMessageID  {
 	XMID_ReqOutputConfig ( 0xC0),
 	XMID_SetOutputConfig ( 0xC0),
 	XMID_OutputConfig ( 0xC1),
+	XMID_SetOutputConfigAck ( 0xC1),
 	XMID_Reset ( 0x40),
 	XMID_ResetAck ( 0x41),
 	XMID_Error ( 0x42),

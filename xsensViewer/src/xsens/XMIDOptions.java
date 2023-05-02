@@ -32,9 +32,18 @@ public class XMIDOptions {
 	 * @return true if the paramters are null 
 	 */
 	public boolean areParamsNull() {
-		if (angleOuput == null) return true; 
-		if (inCompassCal == null) return true; 
-		if (sampleRate == null) return true; 
+		if (angleOuput == null) {
+//			System.out.println("Are params null?: angleOuput " ); 
+			return true; 
+		}
+		if (inCompassCal == null) {
+//			System.out.println("Are params null?: inCompassCal " ); 
+			return true; 
+		}
+		if (sampleRate == null) {
+//			System.out.println("Are params null?: samplerate " ); 
+			return true; 
+		}
 		return false;
 	}
 

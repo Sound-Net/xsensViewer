@@ -232,7 +232,7 @@ public class XSensMessage {
 		}
 		
 		if (clearFlags !=null) {
-			for (int i=0;i<setFlags.length; i++) {
+			for (int i=0;i<clearFlags.length; i++) {
 				clearFlagInt = clearFlagInt | clearFlags[i].getValue();
 			}
 		}
@@ -401,7 +401,7 @@ public class XSensMessage {
 		
 
 
-    	//lets send a output configuration - see page 23 of low level communication protocal. 
+    	//lets send a output configuration - see page 23 of low level communication protocol. 
     	//Example → message for enabling AHS: FA FF 48 08 00 00 00 10 00 00 00 00 A1.
     	System.out.println("Set options flag");
 

@@ -66,10 +66,21 @@ public class XmidOptionsPane extends BorderPane {
 			//check to see whether we have raw MT messages. 
 				switch (sensorData.flag) {
 
-				case MTMESSAGE:			
+				case MTMESSAGE:		
+					
+					for (int i=0; i<sensorData.mtMessage.length; i++) {
+						System.out.print(String.format(" %02x", (byte) sensorData.mtMessage[i])); 
+					}
+					System.out.println(""); 
+
+					
 					//get options. 
 					xMIDOptions = getXMIDOptions(xMIDOptions, sensorData); 
 					setParams(xMIDOptions);
+
+					break;
+				default:
+					//do nothing
 					break;
 				}
 			
@@ -82,6 +93,7 @@ public class XmidOptionsPane extends BorderPane {
 			 setOptionsDisabled(true); 
 			 return;
 		}
+		
 		if (xMIDOptions.areParamsNull()) {
 			 setOptionsDisabled(true); 
 			 return;
@@ -91,7 +103,7 @@ public class XmidOptionsPane extends BorderPane {
 		this.inSituCompassSwitch.setSelected(xMIDOptions.inCompassCal);
 		this.anglesOptionsBox.getSelectionModel().select(xMIDOptions.angleOuput);
 		
-		System.out.println("Frequency!!!:  " + xMIDOptions.sampleRate.intValue()); 
+//		System.out.println("Frequency!!!:  " + xMIDOptions.sampleRate.intValue()); 
 		this.frequencyBox.getSelectionModel().select(Integer.valueOf(xMIDOptions.sampleRate.intValue()));
 
 	}
@@ -120,11 +132,11 @@ public class XmidOptionsPane extends BorderPane {
 			System.out.println("XMID: XMID_OutputConfig: " +  xsensMessage.len);
 			
 			ArrayList<XsDataIdentifier> outputConfig = XSensMessage.get_OutputConfig(xsensMessage.charBufferRx); 
+			
 			for (int i=0; i<outputConfig.size(); i++) {
 				if (outputConfig.get(i).getFrequency()!=null && outputConfig.get(i).getFrequency()>0) {
 					xMIDOptions2.angleOuput = outputConfig.get(i); 
 					xMIDOptions2.sampleRate = outputConfig.get(i).getFrequency(); 
-
 				}
 			}
 			
@@ -132,6 +144,10 @@ public class XmidOptionsPane extends BorderPane {
 		case XMID_SetOptionFlagAck:
 			System.out.println("XMID: XMID_SetOptionFlagAck: " + xsensMessage.len);
 			
+			if (xsensMessage.charBufferRx == null) return xMIDOptions2; 
+			
+			xMIDOptions2.inCompassCal = false;
+
 			ArrayList<XsOptionID> optionsFlags = XSensMessage.get_OptionConfig(xsensMessage.charBufferRx); 
 			
 			for (int i=0; i<optionsFlags.size(); i++) {
@@ -170,10 +186,17 @@ public class XmidOptionsPane extends BorderPane {
 		anglesOptionsBox.getSelectionModel().select(0);
 		HBox.setHgrow(anglesOptionsBox, Priority.ALWAYS);
 		//anglesOptionsBox.prefWidthProperty().bind(holder.widthProperty().subtract(5));
+		anglesOptionsBox.setOnAction((action)->{
+			xMIDOptions.angleOuput =  anglesOptionsBox.getValue(); 
+		});
 		
 		frequencyBox = new ChoiceBox<Integer>(); 
 		frequencyBox.getItems().addAll(25, 50, 75, 100); 
 		frequencyBox.setPrefWidth(60);
+		frequencyBox.setOnAction((action)->{
+			xMIDOptions.sampleRate =  (float) frequencyBox.getValue(); 
+		});
+		
 		
 		HBox outputHolder = new HBox(); 
 		outputHolder.setAlignment(Pos.CENTER_LEFT);
@@ -187,14 +210,21 @@ public class XmidOptionsPane extends BorderPane {
 			try {
 				
 //			System.out.println("Sending message: " + command.getValue());
-			int[] data = new int[4]; 
+			int[] outputData = new int[4]; 
+			
+			
+			
+			//set to config mode for changing stuff
+			sensorControl.sendMessage(XsMessageID.XMID_GotoConfig); 
+
+			Thread.sleep(100);
 			
 			//set the data out type
 			
-			int len = XSensMessage.format_OutputConfiguration(data, 
+			XSensMessage.format_OutputConfiguration(outputData, 
 					new XsDataIdentifier[] {xMIDOptions.angleOuput}, new int[] {SAMPLE_RATE}); 
 			
-			sensorControl.sendMessage(XsMessageID.XMID_SetOutputConfig, data); 
+			sensorControl.sendMessage(XsMessageID.XMID_SetOutputConfig, outputData); 
 			
 			
 			Thread.sleep(200);
@@ -203,14 +233,27 @@ public class XmidOptionsPane extends BorderPane {
 			
 			XsOptionID[] xsOptions = new XsOptionID[] {XsOptionID.EnableInRunCompassCalibration}; 
 			
+			int[] optionsData = new int[8]; 
+			
+//			System.out.println("Set in compass calibration: " + xMIDOptions.inCompassCal); 
+
 			if (xMIDOptions.inCompassCal) {
-				len = XSensMessage.format_OptionConfig(data, xsOptions, null);
+				XSensMessage.format_OptionConfig(optionsData, xsOptions, null);
 			}
 			else {
-				len = XSensMessage.format_OptionConfig(data,null , xsOptions);
+				XSensMessage.format_OptionConfig(optionsData,null , xsOptions);
 			}
 			
-			sensorControl.sendMessage(XsMessageID.XMID_SetOutputConfig, data); 
+			sensorControl.sendMessage(XsMessageID.XMID_SetOptionFlags, optionsData); 
+			
+			Thread.sleep(200);
+
+			//set to config mode for changing stuff
+			if (true) { //TODO - figure out if in measurement mode?
+			sensorControl.sendMessage(XsMessageID.XMID_GotoMeasurement); 
+			}
+
+			
 
 			
 		} catch (InterruptedException e) {
@@ -218,7 +261,6 @@ public class XmidOptionsPane extends BorderPane {
 			e.printStackTrace();
 		} 
 			
-			//TODO
 		});
 		
 		
@@ -268,6 +310,9 @@ public class XmidOptionsPane extends BorderPane {
 		messageBackLabel = new Label(); 
 		
 		inSituCompassSwitch= new ToggleSwitch("In-situ compass calibration"); 
+		inSituCompassSwitch.selectedProperty().addListener((obsval, oldVal, newVal)->{
+			xMIDOptions.inCompassCal = newVal;
+		});
 		
 		HBox hBox = new HBox(); 
 		hBox.setSpacing(5);
@@ -287,6 +332,7 @@ public class XmidOptionsPane extends BorderPane {
 	public void setOptionsDisabled(boolean disable) {
 		anglesOptionsBox.setDisable(disable);
 		inSituCompassSwitch.setDisable(disable);
+		frequencyBox.setDisable(disable);
 		send.setDisable(disable);
 	}
 
