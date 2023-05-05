@@ -60,8 +60,8 @@ public class XSensMessage {
 	 {
 	 	switch (message.mid)
 	 	{
-	 	case XMID_SetOutputConfig:
-	 		return message.len * 2 * 8;
+//	 	case XMID_SetOutputConfig:
+//	 		return message.len * 2 * 8;
 	 	default:
 	 		return message.len;
 	 	}
@@ -409,7 +409,7 @@ public class XSensMessage {
     	
     	mtOptionsTest.mid=XsMessageID.XMID_SetOptionFlags;
     	mtOptionsTest.len = format_OptionConfig(mtOptionsTest.charBufferRx,new XsOptionID[] {XsOptionID.DisableAutoStore}, new XsOptionID[] {XsOptionID.DisableAutoMeasurement}); 
-    	mtOptionsTest.len = format_OptionConfig(mtOptionsTest.charBufferRx,new XsOptionID[] {XsOptionID.EnableAhs}, null); 
+    	//mtOptionsTest.len = format_OptionConfig(mtOptionsTest.charBufferRx,new XsOptionID[] {XsOptionID.EnableAhs}, null); 
 
     	len = XbusMessage_format(raw,  mtOptionsTest);
 
@@ -417,15 +417,21 @@ public class XSensMessage {
     	for (int i=0; i<len+1; i++) {
     		System.out.print(String.format("%02X ",  (byte) raw[i]));
     	}
+    	System.out.println("");
+
+    	
+    	
+    	//This is what a message to set Euler angles should look like 
+    	//36 <17:16:58.452> FA FF C0 10 10 20 FF FF 10 60 FF FF 20 30 00 64 E0 20 FF FF E3
     	
     	
     	System.out.println("Set output configuration");
     	
     	XBusMessage mtOutconfigTest = new XBusMessage(); 
     	
-    	mtOutconfigTest.mid=XsMessageID.XMID_OutputConfig;
+    	mtOutconfigTest.mid=XsMessageID.XMID_SetOutputConfig;
     	
-    	mtOutconfigTest.len = format_OutputConfiguration(mtOutconfigTest.charBufferRx,new XsDataIdentifier[] {XsDataIdentifier.XDI_Quaternion}, new int[] {25}); 
+    	mtOutconfigTest.len = format_OutputConfiguration(mtOutconfigTest.charBufferRx,new XsDataIdentifier[] {XsDataIdentifier.XDI_EulerAngles}, new int[] {100}); 
 
     	len = XbusMessage_format(raw,  mtOutconfigTest);
 
