@@ -657,7 +657,7 @@ public class SensorPane3D  extends BorderPane {
 	}
 
 	public void setDeviceModel() {
-		//System.out.println("CREATE SENSOR MODEL!!"); 
+		//System.out.println("CREATE SENSOR MODEL: " + currentDevice); 
 		if (currentDevice!=null) {
 			//			sensorGroup.getChildren().addAll(createSensor(currentDevice));
 			this.sensorGroup.getChildren().clear();
