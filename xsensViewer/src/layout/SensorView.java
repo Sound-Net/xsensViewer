@@ -92,7 +92,7 @@ public class SensorView extends BorderPane {
 		//create a button to show the slides
 		
 		MDL2IconFont iconFontTab = new MDL2IconFont("\uE8A9");
-		iconFontTab.setSize(20);
+		//iconFontTab.setSize(20);
 
 		Button tabChangeButton = new Button(); 
 		tabChangeButton.setMinSize(60,40);
@@ -114,7 +114,7 @@ public class SensorView extends BorderPane {
 		
 		
 		MDL2IconFont iconFontTiled = new MDL2IconFont("\uEFA5");
-		iconFontTiled.setSize(20);
+		//iconFontTiled.setSize(20);
 		iconFontTiled.setRotate(180);
 		
 		tiledPane = new BorderPane(); 
@@ -205,11 +205,18 @@ public class SensorView extends BorderPane {
 	 * Layout the tiled pane. 
 	 */
 	private Node layoutTiledPane() {
+		
 		 for (int i = 0; i < serialSensorPanes.size(); i++) {
 			 deviceTiledPane.add(serialSensorPanes.get(i),i%2, (int) Math.floor(i/2));
-			 
 			 GridPane.setHgrow(serialSensorPanes.get(i), Priority.ALWAYS);
+		 }
+		 
+		 for (int i=0; i< deviceTiledPane.getColumnConstraints().size(); i++) {
+			 deviceTiledPane.getColumnConstraints().get(i).setPercentWidth(1./serialSensorPanes.size()/2);
+		 }
 
+		 for (int i=0; i< deviceTiledPane.getRowConstraints().size(); i++) {
+			 deviceTiledPane.getRowConstraints().get(i).setPercentHeight(.1/serialSensorPanes.size());
 		 }
 			
 		return tiledPane; 
