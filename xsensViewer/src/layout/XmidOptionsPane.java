@@ -28,7 +28,7 @@ import org.controlsfx.control.ToggleSwitch;
 
 public class XmidOptionsPane extends BorderPane {
 	
-	private static final int SAMPLE_RATE = 25;
+//	private static final int SAMPLE_RATE = 25;
 
 	/**
 	 * The port names
@@ -222,7 +222,7 @@ public class XmidOptionsPane extends BorderPane {
 			//set the data out type
 			
 			XSensMessage.format_OutputConfiguration(outputData, 
-					new XsDataIdentifier[] {xMIDOptions.angleOuput}, new int[] {SAMPLE_RATE}); 
+					new XsDataIdentifier[] {xMIDOptions.angleOuput}, new int[] {frequencyBox.getValue()}); 
 			
 			sensorControl.sendMessage(XsMessageID.XMID_SetOutputConfig, outputData); 
 			
