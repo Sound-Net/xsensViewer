@@ -261,12 +261,12 @@ public class SensorPane3D  extends BorderPane {
 
 				pitchR= new Rotate(); 
 				pitchR.setAxis(new Point3D(1,0,0));
-				pitchR.setAngle(-pitch);
+				pitchR.setAngle(pitch);
 				n.getTransforms().add(pitchR);
 
 				rollR= new Rotate(); 
 				rollR.setAxis(new Point3D(0,0,1));
-				rollR.setAngle(roll+180);
+				rollR.setAngle(-roll);
 				n.getTransforms().add(rollR);
 				break;
 

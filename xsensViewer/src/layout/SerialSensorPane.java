@@ -453,9 +453,9 @@ public class SerialSensorPane extends BorderPane {
 		}
 
 		if (eularAngles!=null) {
-			yawLabel.setText( String.format("%.2f", eularAngles[0]));
+			yawLabel.setText( String.format("%.2f", eularAngles[2]));
 			pitchLabel.setText( String.format("%.2f", eularAngles[1]));
-			rollLabel.setText( String.format("%.2f", eularAngles[2]));
+			rollLabel.setText( String.format("%.2f", eularAngles[0]));
 		}
 	}
 
