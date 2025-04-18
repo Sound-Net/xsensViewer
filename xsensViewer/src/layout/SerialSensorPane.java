@@ -511,7 +511,12 @@ public class SerialSensorPane extends BorderPane {
 		if (sensormessage.batteryLevel!=null) {
 			double batteryLevel=sensormessage.batteryLevel.get(); 
 			
-			System.out.println("Battary level: " + sensormessage.batteryLevel + "  " + sensormessage.batteryLevelV);
+			System.out.println("Battery level: " + sensormessage.batteryLevel + "  " + sensormessage.batteryLevelV);
+			
+			if (batteryLevel>1) {
+				batteryLevel = batteryLevel/100.;
+			}
+						
 			if (batteryLevel>0.98) {
 				batteryLevel=1.; 
 			}
