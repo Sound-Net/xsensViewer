@@ -178,20 +178,23 @@ public class SerialSensorPane extends BorderPane {
 		leftHolder.getChildren().add(advLabel); 
 
 		leftHolder.getChildren().add(this.commandPane = new XmidCommandPane(sensorControl)); 
+		//commandPane.setOptionsDisable(true); 
 		
 		Label advOptionsLabel = new  Label("Advanced Options"); 
 		advOptionsLabel.setPadding(new Insets(10,0,0,0));
 		SensorView.titlelabel(advOptionsLabel);
 		leftHolder.getChildren().add(advOptionsLabel); 
 		leftHolder.getChildren().add(this.optionsPane = new XmidOptionsPane(sensorControl)); 
-		optionsPane.setOptionsDisabled(true);
+		//optionsPane.setOptionsDisabled(true);
 
 		sensorControl.addSensorMessageListener((sensormessage)->{
-			setEulerData(sensormessage);
-			setDataLabelData(sensormessage);
-			sensorPane3D.setOrientationData(sensormessage); 
+			notifySensorMessage(sensormessage);
 		});
-
+		
+		sensorControl.addSensorUpdateListener((sensormessage, dataObject)->{
+			notifySensorUpdate(sensormessage, dataObject);
+		});
+		
 		StackPane holderPane= new StackPane(); 
 		holderPane.getChildren().add(sensorPane3D=new SensorPane3D());
 		//holderPane.setMouseTransparent(true);
@@ -207,6 +210,34 @@ public class SerialSensorPane extends BorderPane {
 
 		this.setCenter(holderPane);
 		this.setLeft(scrollPane);
+	}
+
+	private void notifySensorUpdate(SensorUpdate sensormessage, Object dataObject) {
+		switch (sensormessage) {
+		
+		case SENSOR_CONNECT:
+			
+			break;
+		case SENSOR_CONNECTED:
+			//optionsPane.setOptionsDisabled(false);
+			//commandPane.setOptionsDisable(false);
+			break;
+		case SENSOR_STOP:
+			//optionsPane.setOptionsDisabled(true);
+			//commandPane.setOptionsDisable(true);
+			updateStartButtonLabel();
+			break;
+		default:
+			break;
+		
+		}
+		
+	}
+
+	private void notifySensorMessage(SensorData sensormessage) {
+		setEulerData(sensormessage);
+		setDataLabelData(sensormessage);
+		sensorPane3D.setOrientationData(sensormessage); 
 	}
 
 	/**

@@ -13,6 +13,7 @@ import java.util.TimeZone;
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortDataListener;
 import com.fazecast.jSerialComm.SerialPortEvent;
+import com.fazecast.jSerialComm.SerialPortIOException;
 
 import comms.SerialComms;
 import comms.SerialMessageParser;
@@ -246,9 +247,8 @@ public class SerialSensorControl implements SensorControl {
 		public SerialTask() {
 
 		}
-
-		@Override 
-		protected Integer call() throws Exception {
+		
+		public int streamSerialData() {
 			connect= true;
 			
 			try {
@@ -256,11 +256,9 @@ public class SerialSensorControl implements SensorControl {
 
 				serialComms.initialize();
 
-				System.out.println("Init: " + serialComms.getSerialPort().isOpen());
-
+				System.out.println("INIT: " + serialComms.getSerialPort().isOpen());
 
 				if (serialComms.getSerialPort()!=null){
-					System.out.println("Add event listener;");
 					serialComms.getSerialPort().removeDataListener();
 					serialComms.getSerialPort().addDataListener(serialListener  = new SerialListener(serialComms));
 					notifyUpdate(SensorUpdate.SENSOR_CONNECT, SerialSensorControl.this);
@@ -270,6 +268,8 @@ public class SerialSensorControl implements SensorControl {
 					notifyUpdate(SensorUpdate.SENSOR_STOP, SerialSensorControl.this);
 					return 0; 
 				}
+				
+				serialComms.getSerialPort().openPort(1000);
 
 
 				while (connect==true && !isCancelled()){
@@ -316,9 +316,10 @@ public class SerialSensorControl implements SensorControl {
 						}
 					}
 					else {
-						serialComms.initialize();
-						serialComms.getSerialPort().openPort(1000);
-						System.err.println("Serial port is not open: " + serialComms.getSerialPort().isOpen());
+						break;
+//						serialComms.initialize();
+//						serialComms.getSerialPort().openPort(1000);
+//						System.err.println("Serial port open?: " + serialComms.getSerialPort().isOpen());
 					}
 
 					count++;
@@ -326,18 +327,34 @@ public class SerialSensorControl implements SensorControl {
 				}
 
 			}
+			catch (SerialPortIOException e) {
+				System.err.println("SerialPortIOException - device may have reset");
+				//so the serial port has disconnected - re-attmept a connection. 
+				serialComms.close();
+				notifyUpdate(SensorUpdate.SENSOR_STOP, SerialSensorControl.this);
+				return -1;
+			}
 			catch (Exception e) {
+				System.err.println("Serial port exception - unknown");
 				e.printStackTrace();
 				serialComms.close();
-				serialComms.getSerialPort().closePort();
 				notifyUpdate(SensorUpdate.SENSOR_STOP, SerialSensorControl.this);
-				return 0; 
+				return -1; 
 			}
 
 			serialComms.close();
-			serialComms.getSerialPort().closePort();
 			notifyUpdate(SensorUpdate.SENSOR_STOP, SerialSensorControl.this);
+			
+			//everything is fine so bowing out gracefully
+			return 0;
 
+		}
+
+		@Override 
+		protected Integer call() {
+			while (connect &&  streamSerialData()<0) {
+				System.out.println("Attempting serial reconnect: ");
+			}
 			return 0;
 		}
 

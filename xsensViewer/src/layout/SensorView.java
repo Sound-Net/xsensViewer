@@ -1,5 +1,6 @@
 package layout;
 
+import main.SensorControl;
 import main.SensorsControl;
 import main.SensorsControl.SensorUpdate;
 import main.SerialSensorControl;
@@ -48,7 +49,9 @@ public class SensorView extends BorderPane {
 	 * Reference to the sensor control.
 	 */
 	private SensorsControl sensorsControl;
+	
 	private PamTabPane tabPane;
+	
 	private MasterCommPane masterCommPane;
 	
 	/**
@@ -305,10 +308,11 @@ public class SensorView extends BorderPane {
 		SerialSensorPane serialSensorPane = new SerialSensorPane(asensorControl = new SerialSensorControl(sensorsControl));
 		serialSensorPanes.add(serialSensorPane); 
 		serialSensorPane.getSensorControl().addSensorUpdateListener((sensorUpdate, dataObject)->{
+			// send update to the sensors control
 			sensorsControl.notifyUpdate(sensorUpdate, dataObject); 
 			notifyUpdate(sensorUpdate, dataObject); 
 		});
-		sensorsControl.addSensorControl(	serialSensorPane.getSensorControl());
+		sensorsControl.addSensorControl(serialSensorPane.getSensorControl());
 		
 //		System.out.println("ADD SERIAL SENSOR PANE: " + serialSensorPanes.size());
 
@@ -364,6 +368,8 @@ public class SensorView extends BorderPane {
 	 */
 	private void notifyUpdate(SensorUpdate sensorUpdate, Object dataObject) {
 		masterCommPane.notifyUpdate(sensorUpdate, dataObject); 
+		sensorsControl.notifyUpdate(sensorUpdate, dataObject);
+
 	}
 
 

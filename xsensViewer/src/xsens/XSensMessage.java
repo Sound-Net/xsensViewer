@@ -213,7 +213,7 @@ public class XSensMessage {
 	
 	
 	/**
-	 * Format data for option flags. Options flags are used to set paramters in the 
+	 * Format data for option flags. Options flags are used to set parameters in the 
 	 * xsens device. 
 	 * @param data - the data portion of an XSensMessage
 	 * @param setFlags - the options flags to set (can be null).

@@ -35,7 +35,9 @@ public class XmidCommandPane extends BorderPane {
 	/**
 	 * Reference to the sensor controller. 
 	 */
-	private SerialSensorControl sensorControl; 
+	private SerialSensorControl sensorControl;
+
+	private Button send; 
 	
 	
 	public XmidCommandPane(SerialSensorControl sensorControl) {
@@ -62,7 +64,7 @@ public class XmidCommandPane extends BorderPane {
 		command = new ComboBox<XsMessageID>(commandOptions);
 		command.getSelectionModel().select(0);
 
-		Button send = new Button("Send"); 
+		send = new Button("Send"); 
 		send.setOnAction((action)->{
 			System.out.println("Sending message: " + command.getValue());
 			sensorControl.sendMessage(command.getValue()); 
@@ -101,6 +103,13 @@ public class XmidCommandPane extends BorderPane {
 	public void setMessageBackLabelText(String text) {
 		 messageBackLabel.setText(text);
 		 messageBackLabel.setTooltip(new Tooltip(text));
+	}
+
+
+
+	public void setOptionsDisable(boolean b) {
+		command.setDisable(b);
+		send.setDisable(b);
 	}
 	
 }
