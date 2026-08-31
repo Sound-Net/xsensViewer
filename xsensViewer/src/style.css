@@ -1,0 +1,105 @@
+/*
+ * Layered on top of the Transit theme, which supplies the control styling.
+ *
+ * Kept deliberately in step with the stylesheet of the SoundNet Firmware
+ * Updater (sensorfirmwareupdater/src/main/resources/style.css) so the two
+ * applications read as one product. Class names and colours should be changed
+ * in both or neither.
+ *
+ * Transit's dark style redefines its own tokens but leaves the inherited Modena
+ * text colours alone, so anything this application colours itself needs an
+ * explicit ".dark" counterpart - otherwise dark grey text lands on a #252525
+ * background and disappears.
+ */
+
+.app-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+
+.app-subtitle {
+    -fx-text-fill: #5b6b7f;
+}
+
+.section-heading {
+    -fx-font-weight: bold;
+    -fx-text-fill: accent_color;
+}
+
+.notes {
+    -fx-text-fill: #5b6b7f;
+    -fx-font-size: 11.5px;
+}
+
+.status {
+    -fx-text-fill: #35485e;
+}
+
+.status.error {
+    -fx-text-fill: #b3261e;
+    -fx-font-weight: bold;
+}
+
+/* Section actions: quiet square buttons that sit in the headings. */
+.icon-button {
+    -fx-padding: 5 8 5 8;
+    -fx-background-radius: 5;
+}
+
+.icon {
+    -fx-fill: #35485e;
+}
+
+.icon-button:hover .icon {
+    -fx-fill: accent_color;
+}
+
+.log {
+    -fx-font-family: "Consolas", "Menlo", "DejaVu Sans Mono", monospace;
+    -fx-font-size: 11px;
+}
+
+/*******************************************************************************
+ *  Specific to this application                                               *
+ *                                                                             *
+ *  The firmware updater has no 3D view, so this section has no counterpart     *
+ *  there and can diverge freely.                                              *
+ ******************************************************************************/
+
+/* Readouts drawn over the 3D view. That view is painted black in both styles,
+   so this text stays light whichever theme is in use. */
+.overlay-text .label {
+    -fx-text-fill: #eaf0f5;
+}
+
+/*******************************************************************************
+ *  Dark mode                                                                  *
+ ******************************************************************************/
+
+.dark .app-subtitle,
+.dark .notes {
+    -fx-text-fill: #9fb0c0;
+}
+
+.dark .status {
+    -fx-text-fill: #d3dbe3;
+}
+
+/* #b3261e is unreadable on a dark background. */
+.dark .status.error {
+    -fx-text-fill: #ff7a70;
+}
+
+/* Transit keeps accent_color at #0078d7 in both styles, which is heavy against
+   #252525; lift it so headings stay legible. */
+.dark .section-heading {
+    -fx-text-fill: derive(accent_color, 45%);
+}
+
+.dark .icon {
+    -fx-fill: #cdd6df;
+}
+
+.dark .icon-button:hover .icon {
+    -fx-fill: derive(accent_color, 45%);
+}

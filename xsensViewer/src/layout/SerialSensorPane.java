@@ -25,7 +25,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.TextAlignment;
-import jfxtras.styles.jmetro.MDL2IconFont;
+import layout.utils.Icons;
 import main.SerialSensorControl;
 import xsens.XsMessageID;
 import main.DeviceManager;
@@ -154,11 +154,13 @@ public class SerialSensorPane extends BorderPane {
 		SensorView.titlelabel(sensorLabel);
 		
 		idLabel= new Label(); 
+		idLabel.getStyleClass().add("notes");
 		idLabel.setTextAlignment(TextAlignment.CENTER);
 		idLabel.setAlignment(Pos.CENTER_LEFT);
 //		idLabel.setTooltip(new Tooltip("The ID of the sensor package (also the ID of the xsens device)"));
 
 		firmwareLabel= new Label(); 
+		firmwareLabel.getStyleClass().add("notes");
 		firmwareLabel.setTextAlignment(TextAlignment.CENTER);
 		firmwareLabel.setAlignment(Pos.CENTER_LEFT);
 //		firmwareLabel.setTooltip(new Tooltip("The current firmware version"));
@@ -252,6 +254,8 @@ public class SerialSensorPane extends BorderPane {
 	private Pane createEulerAnglesPane() {
 
 		GridPane gridPane= new GridPane();
+		// Drawn over the black 3D view, so it keeps light text in both themes.
+		gridPane.getStyleClass().add("overlay-text");
 		gridPane.setHgap(5);
 		gridPane.setVgap(5);
 
@@ -422,9 +426,10 @@ public class SerialSensorPane extends BorderPane {
 			sensorControl.sendMessage(XsMessageID.XMID_ReqSDFormat); 
 		});
 		
-		MDL2IconFont iconFont1 = new MDL2IconFont("\uE72C");
 		refreshbutton = new Button(""); 
-		refreshbutton.setGraphic(iconFont1);
+		refreshbutton.setGraphic(Icons.refresh());
+		refreshbutton.getStyleClass().add("icon-button");
+		refreshbutton.setTooltip(new Tooltip("Read the SD card size again"));
 		//refreshbutton.setPrefWidth(BUTTON_WIDTH);
 		refreshbutton.setOnAction((action)->{
 			sensorControl.sendMessage(XsMessageID.XMID_ReqSDSize); 

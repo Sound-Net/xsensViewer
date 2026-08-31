@@ -1,0 +1,115 @@
+name: Build installers
+
+# Produces the installers researchers download. jpackage is not a cross-compiler:
+# a Windows installer can only be built on Windows, which is why this runs on a
+# matrix rather than on one machine.
+#
+# Kept deliberately in step with the SoundNet Firmware Updater's workflow so the
+# two applications are built and shipped the same way.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+# The Maven project lives one level down in this repository.
+defaults:
+  run:
+    working-directory: xsensViewer
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            package_type: msi
+            artifact: SoundNetSensorViewer-windows
+            icon: packaging/icon.ico
+          - os: macos-latest
+            package_type: dmg
+            artifact: SoundNetSensorViewer-macos
+            icon: packaging/icon.icns
+          - os: ubuntu-latest
+            package_type: deb
+            artifact: SoundNetSensorViewer-linux
+            icon: packaging/icon.png
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      # WiX 3 provides the .msi backend that jpackage shells out to. It is not
+      # present on the GitHub Windows image by default.
+      - name: Install WiX (Windows)
+        if: runner.os == 'Windows'
+        run: choco install wixtoolset --version=3.14.1 --no-progress -y
+        shell: pwsh
+        working-directory: .
+
+      # NSIS builds the single-file .exe installer (see the "win" profile in
+      # pom.xml, nsis-installer execution) - no WiX/Burn extensions needed.
+      - name: Install NSIS (Windows)
+        if: runner.os == 'Windows'
+        run: choco install nsis --no-progress -y
+        shell: pwsh
+        working-directory: .
+
+      # On Windows this also builds target/dist/app-image (self-contained
+      # folder) and target/dist/installer/*.exe (single-file NSIS installer,
+      # bundled JRE included) automatically - see the "win" profile in pom.xml.
+      - name: Build
+        run: mvn -B package
+
+      - name: Package installer
+        shell: bash
+        run: |
+          jpackage \
+            --type ${{ matrix.package_type }} \
+            --name "SoundNet Sensor Viewer" \
+            --app-version 1.0.0 \
+            --vendor "SoundNet" \
+            --input target/app \
+            --main-jar xsensviewer.jar \
+            --main-class main.SensorMainLauncher \
+            --icon "${{ matrix.icon }}" \
+            --dest target/installer \
+            $EXTRA
+        env:
+          # --win-per-user-install keeps the .msi in step with the NSIS
+          # installer: installs under the user's own profile, no admin
+          # rights and no UAC prompt.
+          EXTRA: ${{ runner.os == 'Windows' && '--win-shortcut --win-menu --win-dir-chooser --win-per-user-install' || '' }}
+
+      # A plain unzip-and-run build, for anyone who cannot run an installer -
+      # locked-down institutional laptops are common in this audience.
+      - name: Package portable app image
+        shell: bash
+        run: |
+          jpackage \
+            --type app-image \
+            --name "SoundNet Sensor Viewer" \
+            --app-version 1.0.0 \
+            --input target/app \
+            --main-jar xsensviewer.jar \
+            --main-class main.SensorMainLauncher \
+            --icon "${{ matrix.icon }}" \
+            --dest target/portable
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            xsensViewer/target/installer/*
+            xsensViewer/target/portable/*
+            xsensViewer/target/dist/installer/*

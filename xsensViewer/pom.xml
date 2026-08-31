@@ -5,6 +5,25 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<description>Views sensor data via serial from attached devices</description>
 
+	<properties>
+		<!-- Kept in step with the SoundNet Firmware Updater, so both applications
+		     render the Transit theme identically. Transit 2.0.0 is compiled for
+		     Java 17 and built against JavaFX 22. -->
+		<maven.compiler.release>17</maven.compiler.release>
+		<javafx.version>22.0.2</javafx.version>
+		<transit.version>2.0.0</transit.version>
+		<controlsfx.version>11.2.1</controlsfx.version>
+
+		<!-- Shown in Add/Remove Programs and stamped into the launcher. This
+		     cannot be ${project.version}: jpackage takes one to three integers
+		     separated by dots, so it rejects both the "-SNAPSHOT" suffix and a
+		     leading zero ("the first number in an app-version cannot be zero").
+		     Bump this when cutting a release. -->
+		<app.version>1.0.0</app.version>
+		<app.name>SoundNet Sensor Viewer</app.name>
+		<app.main.class>main.SensorMainLauncher</app.main.class>
+	</properties>
+
 
 	<repositories>
 		<!--  Project repo to hold the custom jar files that are not available in Maven.  Do
@@ -36,7 +55,29 @@
 		<dependency>
 			<groupId>org.openjfx</groupId>
 			<artifactId>javafx-controls</artifactId>
-			<version>16</version>
+			<version>${javafx.version}</version>
+		</dependency>
+
+		<!-- fxyz3d drags in JavaFX 15 (including its x86 mac natives, which are
+		     the wrong ones on Apple silicon). Declaring every module we need at
+		     ${javafx.version} and excluding fxyz3d's below keeps exactly one
+		     JavaFX on the classpath. -->
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-base</artifactId>
+			<version>${javafx.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-fxml</artifactId>
+			<version>${javafx.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.openjfx</groupId>
+			<artifactId>javafx-swing</artifactId>
+			<version>${javafx.version}</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.jfxtras/jmetro -->
@@ -47,12 +88,23 @@
 		</dependency>
 
 
-		<!-- https://mvnrepository.com/artifact/org.jfxtras/jmetro -->
+		<!-- Transit theme (GPLv2 with Classpath Exception, so linking is fine
+		     here). Replaces JMetro, which is the same author's earlier theme.
+		     Pulls in FXSkins and fxthemes transitively. -->
 		<dependency>
-			<groupId>org.jfxtras</groupId>
-			<artifactId>jmetro</artifactId>
-    		<version>11.6.16</version>
-    	</dependency>
+			<groupId>com.pixelduke</groupId>
+			<artifactId>transit</artifactId>
+			<version>${transit.version}</version>
+			<exclusions>
+				<!-- Transit and ControlsFX both declare their own JavaFX. Letting
+				     those onto the classpath alongside the JavaFX declared above
+				     mixes two runtimes and ships the wrong platform's natives. -->
+				<exclusion>
+					<groupId>org.openjfx</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
 		<dependency>
@@ -79,6 +131,12 @@
 			<groupId>org.fxyz3d</groupId>
 			<artifactId>fxyz3d</artifactId>
 			<version>0.5.4</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.openjfx</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 
@@ -86,26 +144,184 @@
 			<groupId>org.fxyz3d</groupId>
 			<artifactId>fxyz-importers</artifactId>
 			<version>0.5.3</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.openjfx</groupId>
+					<artifactId>*</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		
-		<!-- https://mvnrepository.com/artifact/org.controlsfx/controlsfx -->
+		<!-- ToggleSwitch, used for the dark-mode switch. -->
 		<dependency>
 		    <groupId>org.controlsfx</groupId>
 		    <artifactId>controlsfx</artifactId>
-		    <version>11.1.2</version>
+		    <version>${controlsfx.version}</version>
+		    <exclusions>
+		        <exclusion>
+		            <groupId>org.openjfx</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
+		    </exclusions>
 		</dependency>
 
 
 
 	</dependencies>
 
+	<!-- jpackage is not a cross-compiler: a Windows build can only be produced
+	     on Windows. This profile therefore only switches itself on there, and
+	     runs as part of an ordinary "mvn package". -->
+	<profiles>
+		<profile>
+			<id>win</id>
+			<activation><os><family>windows</family></os></activation>
+			<build>
+				<plugins>
+					<!-- Turns the staged app in target/app into self-contained builds
+					     with their own bundled JRE, so a researcher never needs to
+					     install Java.
+
+					     app-image is a *folder* (target/dist/app-image/...): the .exe
+					     launcher inside it is only a few hundred KB because it is
+					     just a native stub that loads the JVM from the "runtime"
+					     folder sitting next to it - the whole folder must be kept
+					     together, the .exe cannot be copied out on its own.
+
+					     For a single .exe file that actually contains the JRE, the
+					     app-image folder is packed by NSIS (makensis -
+					     https://nsis.sourceforge.io/, e.g. choco install nsis), which
+					     recursively bundles the whole tree - nested runtime/ JRE
+					     included - into one file, with no WiX/Burn extensions to
+					     configure. That installer is large (100+ MB) and installs
+					     under the user's own profile with its own copy of the JRE -
+					     no administrator rights needed. If NSIS is not
+					     available the step is skipped with a warning rather than
+					     failing the build; the app-image folder is produced either
+					     way. -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>3.1.0</version>
+						<executions>
+							<execution>
+								<id>jpackage-app-image</id>
+								<phase>package</phase>
+								<goals><goal>run</goal></goals>
+								<configuration>
+									<target>
+										<delete dir="${project.build.directory}/dist" quiet="true"/>
+										<!-- ${java.home} is the JDK running this Maven build, so
+										     this does not depend on jpackage being on PATH
+										     (java.home may be a JRE-only install, e.g. Eclipse's
+										     bundled runtime, in which case this step fails -
+										     build with a full JDK 17+ on JAVA_HOME instead). -->
+										<exec executable="${java.home}/bin/jpackage" failonerror="true">
+											<arg value="--type"/>
+											<arg value="app-image"/>
+											<arg value="--name"/>
+											<arg value="${app.name}"/>
+											<arg value="--app-version"/>
+											<arg value="${app.version}"/>
+											<arg value="--vendor"/>
+											<arg value="SoundNet"/>
+											<arg value="--input"/>
+											<arg value="${project.build.directory}/app"/>
+											<arg value="--main-jar"/>
+											<arg value="${project.build.finalName}.jar"/>
+											<arg value="--main-class"/>
+											<arg value="${app.main.class}"/>
+											<!-- Icon for the generated launcher .exe. -->
+											<arg value="--icon"/>
+											<arg value="${project.basedir}/packaging/icon.ico"/>
+											<arg value="--dest"/>
+											<arg value="${project.build.directory}/dist/app-image"/>
+										</exec>
+									</target>
+								</configuration>
+							</execution>
+							<execution>
+								<id>nsis-installer</id>
+								<phase>package</phase>
+								<goals><goal>run</goal></goals>
+								<configuration>
+									<target>
+										<mkdir dir="${project.build.directory}/dist/installer"/>
+										<copy file="${project.basedir}/packaging/windows-installer.nsi.template"
+										      tofile="${project.build.directory}/windows-installer.nsi"
+										      overwrite="true">
+											<filterset>
+												<filter token="APP_NAME" value="${app.name}"/>
+												<filter token="APP_VERSION" value="${app.version}"/>
+												<filter token="APP_EXE" value="${app.name}.exe"/>
+												<filter token="APP_ICON" value="${project.basedir}/packaging/icon.ico"/>
+												<filter token="APP_IMAGE_DIR"
+												        value="${project.build.directory}/dist/app-image/${app.name}"/>
+												<filter token="OUT_FILE"
+												        value="${project.build.directory}/dist/installer/SoundNetSensorViewerSetup-${app.version}.exe"/>
+											</filterset>
+										</copy>
+										<!-- choco install updates PATH in the registry, but a
+										     terminal/IDE opened before that was run keeps its old
+										     copy of PATH and won't see makensis until it is
+										     restarted. Fall back to NSIS's default install
+										     locations so this works without a restart too. -->
+										<condition property="makensis.cmd"
+										           value="C:\Program Files (x86)\NSIS\makensis.exe">
+											<available file="C:\Program Files (x86)\NSIS\makensis.exe"/>
+										</condition>
+										<condition property="makensis.cmd"
+										           value="C:\Program Files\NSIS\makensis.exe">
+											<available file="C:\Program Files\NSIS\makensis.exe"/>
+										</condition>
+										<condition property="makensis.cmd" value="makensis">
+											<not><isset property="makensis.cmd"/></not>
+										</condition>
+										<!-- failonerror covers makensis running and returning a
+										     non-zero exit code; failifexecutionfails covers
+										     makensis not being found at all - Ant treats that as a
+										     hard build failure by default whatever failonerror
+										     says. -->
+										<exec executable="${makensis.cmd}" failonerror="false" failifexecutionfails="false"
+										      resultproperty="nsis.exit">
+											<arg value="${project.build.directory}/windows-installer.nsi"/>
+										</exec>
+										<condition property="nsis.message"
+										           value="NSIS installer built: ${project.build.directory}/dist/installer">
+											<equals arg1="${nsis.exit}" arg2="0"/>
+										</condition>
+										<condition property="nsis.message"
+										           value="NSIS not available (exit ${nsis.exit}) - skipped the single-file installer; target/dist/app-image was still produced.">
+											<not><equals arg1="${nsis.exit}" arg2="0"/></not>
+										</condition>
+										<echo>${nsis.message}</echo>
+									</target>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 	<build>
+		<!-- A stable, version-free jar name, so the packaging steps here and in
+		     .github/workflows/release.yml can name it without tracking the
+		     project version. Matches how the firmware updater is built. -->
+		<finalName>xsensviewer</finalName>
 		<sourceDirectory>src</sourceDirectory>
 		<resources>
 			<resource>
 				<directory>src</directory>
 				<excludes>
 					<exclude>**/*.java</exclude>
+					<!-- Vendored copies of libraries Maven now supplies. A jar nested
+					     inside a jar is not on the classpath anyway, so these were
+					     only ever dead weight - and src/jars/jmetro-5.5.jar is a
+					     theme this application no longer uses. -->
+					<exclude>jars/**</exclude>
+					<exclude>**/.DS_Store</exclude>
 				</excludes>
 			</resource>
 		</resources>
@@ -115,16 +331,16 @@
 				<artifactId>javafx-maven-plugin</artifactId>
 				<version>0.0.8</version>
 				<configuration>
-					<mainClass>HelloFX</mainClass>
+					<mainClass>${app.main.class}</mainClass>
 				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version>
 				<configuration>
-					<source>16</source>
-					<target>16</target>
-					<release>16</release>
+					<source>${maven.compiler.release}</source>
+					<target>${maven.compiler.release}</target>
+					<release>${maven.compiler.release}</release>
 					<!-- -The bit below prevents jar from being implemented -->
 					<!-- <compilerId>jdt</compilerId> <compilerArguments> <properties>.settings/org.eclipse.jdt.core.prefs</properties> 
 						make sure to use same params as what Eclipse uses </compilerArguments> -->
@@ -139,9 +355,9 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<addClasspath>false</addClasspath>
+							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>main.SensorMainLauncher</mainClass>
+							<mainClass>${app.main.class}</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -158,9 +374,76 @@
 						<goals>
 							<goal>shade</goal>
 						</goals>
+						<configuration>
+							<!-- Attach the fat jar as ...-all.jar instead of replacing
+							     the main artifact. jpackage needs the plain thin jar
+							     next to target/app/lib; the fat jar stays available
+							     for anyone who just wants "java -jar". -->
+							<shadedArtifactAttached>true</shadedArtifactAttached>
+							<shadedClassifierName>all</shadedClassifierName>
+							<transformers>
+								<!-- fxyz3d's importers are discovered through
+								     META-INF/services; without this the entries from
+								     the different jars overwrite each other. -->
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>${app.main.class}</mainClass>
+								</transformer>
+							</transformers>
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.DSA</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+										<exclude>module-info.class</exclude>
+									</excludes>
+								</filter>
+							</filters>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
+			<!-- Collect every dependency next to the jar so jpackage can consume
+			     the whole directory as a classpath app-image. Mirrors the layout
+			     the SoundNet Firmware Updater builds. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.6.1</version>
+				<executions>
+					<execution>
+						<id>copy-deps</id>
+						<phase>package</phase>
+						<goals><goal>copy-dependencies</goal></goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/app/lib</outputDirectory>
+							<includeScope>runtime</includeScope>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>stage-jar</id>
+						<phase>package</phase>
+						<goals><goal>run</goal></goals>
+						<configuration>
+							<target>
+								<copy file="${project.build.directory}/${project.build.finalName}.jar"
+								      todir="${project.build.directory}/app"/>
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>

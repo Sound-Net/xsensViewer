@@ -5,6 +5,7 @@ import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -18,12 +19,6 @@ import layout.SensorView;
  *
  */
 public class SensorMain extends Application {
-	
-//	public URL darkStyle=ClassLoader.getSystemResource("resources/jmetroDarkTheme.css");
-	
-	
-//	public static final String darkStyle = "jmetroDarkTheme.css";
-
 	
     public static void main(String[] args) {
        launch(args);
@@ -42,20 +37,23 @@ public class SensorMain extends Application {
         SensorsControl sensorControl = new SensorsControl(); 
         SensorView sensorView = new SensorView(sensorControl); 
         
-		//primaryStage.getIcons().add( new Image(SensorMain.class.getResourceAsStream("rotate_icon.png"))); 
-
 		root.setPadding(new Insets(5,5,5,5));
 		
         root.getChildren().add(sensorView);
-        //new JMetro(JMetro.Style.DARK).applyTheme(root);
-//        System.out.println(darkStyle.getFile());
-        //root.getStylesheets().add(darkStyle);
 
-        Scene scene =  new Scene(root, 750, 550); 
+        Scene scene =  new Scene(root, 900, 680); 
         
         SensorView.setTheme(scene, root); 
 
+        // Window, taskbar and dock icon. Generated from the master artwork by
+        // tools/make-icons.py; the installers use the .ico/.icns in packaging/.
+        primaryStage.getIcons().add(
+                new Image(SensorMain.class.getResourceAsStream("/resources/app-icon.png")));
+
+        primaryStage.setTitle("SoundNet Sensor Viewer");
         primaryStage.setScene(scene);
+        primaryStage.setMinWidth(700);
+        primaryStage.setMinHeight(520);
 
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
