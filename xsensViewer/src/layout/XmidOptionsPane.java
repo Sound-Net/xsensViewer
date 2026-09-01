@@ -191,7 +191,7 @@ public class XmidOptionsPane extends BorderPane {
 		});
 
 		frequencyBox = new ChoiceBox<Integer>(); 
-		frequencyBox.getItems().addAll(5, 10, 15, 25, 50, 75, 100); 
+		frequencyBox.getItems().addAll(10, 25, 50, 75, 100); 
 		frequencyBox.setPrefWidth(60);
 		frequencyBox.setOnAction((action)->{
 			xMIDOptions.sampleRate =  (float) frequencyBox.getValue(); 

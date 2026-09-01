@@ -1,7 +1,6 @@
 # SoundNet Sensor Viewer
 
-A desktop application for connecting to [SoundNet](https://github.com/Sound-Net) sensor
-packages over USB serial, watching their output live, and sending them commands.
+A desktop application for connecting to [SoundNet](https://github.com/Sound-Net) sensor packages packages over USB serial, watching their output live, and sending  commands to the xsens mti-3 orientation sensor. Note this is for the SoundNet project which aims to use advanced underwater recordings systems to track porpoises and dolphins around fishing nets. 
 
 Each sensor gets its own tab: pick a serial port, connect, and orientation, pressure,
 temperature, light spectrum, battery and SD card state stream in while the sensor
@@ -27,8 +26,8 @@ package is drawn in 3D from its own orientation data.
   between them, including any torn-off windows. The choice is remembered between
   runs.
 
-| Light | Tiled layout |
-| --- | --- |
+| Light                                            | Tiled layout                                  |
+| ------------------------------------------------ | --------------------------------------------- |
 | ![Light mode](docs/images/main-window-light.png) | ![Tiled layout](docs/images/tiled-layout.png) |
 
 ## Installing
@@ -36,11 +35,11 @@ package is drawn in 3D from its own orientation data.
 Tagged releases build installers for Windows, macOS and Linux. Download the one for
 your platform from the repository's Releases page:
 
-| Platform | Installer | Also available |
-| --- | --- | --- |
-| Windows | `.exe` (NSIS, per-user, no admin rights) or `.msi` | portable app image |
-| macOS | `.dmg` | portable app image |
-| Linux | `.deb` | portable app image |
+| Platform | Installer                                          | Also available     |
+| -------- | -------------------------------------------------- | ------------------ |
+| Windows  | `.exe` (NSIS, per-user, no admin rights) or `.msi` | portable app image |
+| macOS    | `.dmg`                                             | portable app image |
+| Linux    | `.deb`                                             | portable app image |
 
 Every installer bundles its own Java runtime, so nothing needs to be installed first.
 The portable app image is an unzip-and-run folder, for machines where installers are

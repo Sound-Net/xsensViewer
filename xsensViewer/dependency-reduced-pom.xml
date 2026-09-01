@@ -183,12 +183,14 @@
                       <arg />
                       <arg />
                       <arg />
+                      <arg />
+                      <arg />
                     </exec>
                   </target>
                 </configuration>
               </execution>
               <execution>
-                <id>nsis-installer</id>
+                <id>wix-exe-installer</id>
                 <phase>package</phase>
                 <goals>
                   <goal>run</goal>
@@ -196,18 +198,9 @@
                 <configuration>
                   <target>
                     <mkdir />
-                    <copy>
-                      <filterset>
-                        <filter />
-                        <filter />
-                        <filter />
-                        <filter />
-                        <filter />
-                        <filter />
-                      </filterset>
-                    </copy>
+                    <property />
                     <condition>
-                      <available />
+                      <isset />
                     </condition>
                     <condition>
                       <available />
@@ -217,7 +210,45 @@
                         <isset />
                       </not>
                     </condition>
+                    <condition>
+                      <isset />
+                    </condition>
+                    <condition>
+                      <isset />
+                    </condition>
+                    <condition>
+                      <not>
+                        <or>
+                          <isset />
+                          <isset />
+                        </or>
+                      </not>
+                    </condition>
                     <exec>
+                      <env />
+                      <arg />
+                      <arg />
+                      <arg />
+                      <arg />
+                      <arg />
+                      <arg />
+                      <arg />
+                      <arg />
+                      <arg />
+                      <arg />
+                      <arg />
+                      <arg />
+                      <arg />
+                      <arg />
+                      <arg />
+                      <arg />
+                      <arg />
+                      <arg />
+                      <arg />
+                      <arg />
+                      <arg />
+                      <arg />
+                      <arg />
                       <arg />
                     </exec>
                     <condition>
@@ -228,7 +259,7 @@
                         <equals />
                       </not>
                     </condition>
-                    <echo>${nsis.message}</echo>
+                    <echo />
                   </target>
                 </configuration>
               </execution>
