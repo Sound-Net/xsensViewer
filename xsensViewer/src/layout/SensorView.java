@@ -11,8 +11,6 @@ import com.pixelduke.transit.Style;
 import com.pixelduke.transit.TransitStyleClass;
 import com.pixelduke.transit.TransitTheme;
 
-import org.controlsfx.control.ToggleSwitch;
-
 import layout.utils.Icons;
 import layout.utils.PamTabFX;
 import layout.utils.PamTabPane;
@@ -32,10 +30,8 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.TilePane;
-import javafx.scene.layout.VBox;
 import javafx.stage.WindowEvent;
 
 
@@ -56,6 +52,11 @@ public class SensorView extends BorderPane {
 	
 	/** Remembers the light/dark choice between runs. */
 	private static final Preferences preferences = Preferences.userNodeForPackage(SensorView.class);
+	
+	/** Size of the square buttons that sit in the top right corner of a layout. */
+	private static final double CORNER_BUTTON_WIDTH = 60;
+	
+	private static final double CORNER_BUTTON_HEIGHT = 40;
 	
 	
 	/**
@@ -89,6 +90,18 @@ public class SensorView extends BorderPane {
 
 	private GridPane deviceTiledPane;
 
+	/**
+	 * The light/dark switch. Lives in the top right corner of whichever layout is
+	 * showing, so it is moved between the two corner boxes below.
+	 */
+	private Button darkModeButton;
+
+	/** Corner of the tab strip - holds the layout button and the dark mode switch. */
+	private HBox tabCorner;
+
+	/** Corner of the tiled layout - the same two controls. */
+	private HBox tiledCorner;
+
 	public SensorView(SensorsControl sensorControl) {
 		
 		
@@ -113,7 +126,7 @@ public class SensorView extends BorderPane {
 		
 		Button tabChangeButton = new Button(); 
 		tabChangeButton.getStyleClass().add("icon-button");
-		tabChangeButton.setMinSize(60,40);
+		tabChangeButton.setMinSize(CORNER_BUTTON_WIDTH, CORNER_BUTTON_HEIGHT);
 		tabChangeButton.setGraphic(Icons.tiles());
 		tabChangeButton.setTooltip(new Tooltip("Switch between tab or tiled layout"));
 		tabChangeButton.setOnAction((action->{
@@ -126,7 +139,13 @@ public class SensorView extends BorderPane {
 			setLayoutType(LayoutType.TILED_LAYOUT); 
 		}));
 		
-		tabPane.setTabEndRegion(tabChangeButton);
+		darkModeButton = createDarkModeButton();
+
+		// The skin measures the end region from its min/pref width, so this cannot
+		// be left to the HBox to compute.
+		tabCorner = corner(tabChangeButton);
+		tabCorner.setMinWidth(CORNER_BUTTON_WIDTH * 2);
+		tabPane.setTabEndRegion(tabCorner);
 		
 		/***Create the tiled pane***/
 		
@@ -134,7 +153,7 @@ public class SensorView extends BorderPane {
 		tiledPane = new BorderPane(); 
 		Button tileChange = new Button(); 
 		tileChange.getStyleClass().add("icon-button");
-		tileChange.setMinSize(60,40);
+		tileChange.setMinSize(CORNER_BUTTON_WIDTH, CORNER_BUTTON_HEIGHT);
 		tileChange.setGraphic(Icons.tabs());
 		tileChange.setTooltip(new Tooltip("Switch between tab or tiled layout"));
 		tileChange.setOnAction((action->{
@@ -150,8 +169,8 @@ public class SensorView extends BorderPane {
 	    
 	    
 	    tiledPane.setCenter(deviceTiledPane);
-	    tiledPane.setTop(tileChange);
-	    BorderPane.setAlignment(tileChange, Pos.TOP_RIGHT);
+	    tiledPane.setTop(tiledCorner = corner(tileChange));
+	    BorderPane.setAlignment(tiledCorner, Pos.TOP_RIGHT);
 
 		/***************************/
 
@@ -161,7 +180,6 @@ public class SensorView extends BorderPane {
         splitPane.getItems().addAll(devicePaneHolder, masterCommPane = new MasterCommPane(sensorControl));
         splitPane.setDividerPosition(0, 0.8);
 		
-		this.setTop(header());
 		this.setCenter(splitPane);
 //		this.setRight(masterCommPane = new MasterCommPane(sensorControl));
 		
@@ -176,40 +194,52 @@ public class SensorView extends BorderPane {
 	
 	
 	/**
-	 * The title strip across the top of the window.
-	 * 
-	 * <p>Deliberately the same shape as the firmware updater's header - name on
-	 * the left, one line saying what the application does underneath, and the
-	 * dark mode switch on the right.
-	 * 
-	 * @return the header pane.
+	 * A corner box for the top right of a layout, holding the dark mode switch and
+	 * that layout's button for swapping to the other layout.
+	 *
+	 * <p>The application used to carry a title and a one line description across
+	 * the top of the window. That cost a strip of height on every window for text
+	 * that only repeated the title bar, so the dark mode switch was moved into the
+	 * empty right hand end of the tab strip instead, where it costs nothing.
+	 *
+	 * @param layoutButton - the layout button for this layout.
+	 * @return the corner box. The dark mode switch is added by
+	 *         {@link #setLayoutType(LayoutType)}, which owns which layout is showing.
 	 */
-	private Pane header() {
-		Label title = new Label("SoundNet Sensor Viewer");
-		title.getStyleClass().add("app-title");
-		
-		// Drives the theme for every open window, including detached ones.
-		ToggleSwitch darkModeToggle = new ToggleSwitch("Dark mode");
-		darkModeToggle.setSelected(isDarkMode());
-		darkModeToggle.selectedProperty().addListener((obs, was, dark) -> setDarkMode(dark));
-		
-		Region spacer = new Region();
-		HBox.setHgrow(spacer, Priority.ALWAYS);
-		
-		HBox titleRow = new HBox(12, title, spacer, darkModeToggle);
-		titleRow.setAlignment(Pos.CENTER_LEFT);
-		
-		Label subtitle = new Label(
-				"Reads live data from SoundNet sensors over USB.");
-		subtitle.getStyleClass().add("app-subtitle");
-		subtitle.setWrapText(true);
-		
-		VBox header = new VBox(4, titleRow, subtitle);
-		header.setPadding(new Insets(4, 5, 10, 5));
-		return header;
+	private HBox corner(Button layoutButton) {
+		HBox box = new HBox(layoutButton);
+		box.setAlignment(Pos.CENTER_RIGHT);
+		return box;
 	}
-	
-	
+
+
+	/**
+	 * The light/dark switch - a sun or a moon, matching the other quiet icon
+	 * buttons in the corner rather than reading as a primary action.
+	 *
+	 * @return the switch.
+	 */
+	private Button createDarkModeButton() {
+		Button button = new Button();
+		button.getStyleClass().add("icon-button");
+		button.setMinSize(CORNER_BUTTON_WIDTH, CORNER_BUTTON_HEIGHT);
+		showDarkModeState(button, isDarkMode());
+		button.setOnAction(action -> {
+			boolean dark = !isDarkMode();
+			setDarkMode(dark);
+			showDarkModeState(button, dark);
+		});
+		return button;
+	}
+
+
+	/** Points the switch at the theme it would move to, not the one in use. */
+	private static void showDarkModeState(Button button, boolean dark) {
+		button.setGraphic(dark ? Icons.sun() : Icons.moon());
+		button.setTooltip(new Tooltip(dark ? "Switch to the light theme" : "Switch to the dark theme"));
+	}
+
+
 	/**
 	 * Layout the device pane according to the layout flag. 
 	 * @param currentLayout - the layout flag indicating how the pane should look. 
@@ -222,15 +252,31 @@ public class SensorView extends BorderPane {
 		switch (currentLayout2) {
 		case TABBED_LAYOUT:
 			pane = layoutTabPane() ; 
+			//only one layout is on screen at a time, so the switch moves with it.
+			showDarkModeButtonIn(tabCorner);
 			break;
 		case TILED_LAYOUT:
 			pane = layoutTiledPane() ; 
+			showDarkModeButtonIn(tiledCorner);
 			break;
 		default:
 			break;
 		}
 		
 		devicePaneHolder.setCenter(pane);
+	}
+	
+	
+	/**
+	 * Move the dark mode switch into the corner of the layout that is showing,
+	 * ahead of that layout's own button.
+	 * 
+	 * @param cornerBox - the corner box of the layout being shown. 
+	 */
+	private void showDarkModeButtonIn(HBox cornerBox) {
+		tabCorner.getChildren().remove(darkModeButton);
+		tiledCorner.getChildren().remove(darkModeButton);
+		cornerBox.getChildren().add(0, darkModeButton);
 	}
 	
 	

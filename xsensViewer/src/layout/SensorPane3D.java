@@ -19,13 +19,16 @@ import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 import javafx.scene.shape.DrawMode;
 import javafx.scene.shape.MeshView;
+import javafx.scene.shape.Shape3D;
 import javafx.scene.shape.Sphere;
 import javafx.scene.text.Text;
 import javafx.scene.transform.Rotate;
@@ -53,6 +56,15 @@ public class SensorPane3D  extends BorderPane {
 
 	private static final Color lightColor = Color.rgb(244, 255, 250);
 	private static final Color jewelColor = Color.rgb(0, 190, 222);
+
+	/** Axis colour over a dark background. */
+	private static final Color AXIS_ON_DARK = Color.WHITE;
+
+	/** Axis colour over a light background, matching the icon colour in style.css. */
+	private static final Color AXIS_ON_LIGHT = Color.web("#35485e");
+
+	/** Backgrounds brighter than this are treated as light. */
+	private static final double LIGHT_BACKGROUND_BRIGHTNESS = 0.5;
 
 
 	/**
@@ -95,7 +107,75 @@ public class SensorPane3D  extends BorderPane {
 	 * @param magneticCalibration - magnetic calibration class to calibrate the pane. 
 	 */
 	public SensorPane3D() {
+		// style.css paints this pane; the SubScene inside is transparent so the
+		// colour shows through. See followBackground() for why.
+		this.getStyleClass().add("sensor-3d");
 		this.setCenter(create3DPane());
+		followBackground();
+	}
+
+
+	/**
+	 * Keeps the 3D content readable against whichever background the theme gives
+	 * this pane.
+	 *
+	 * <p>Neither half of the 3D view can be reached by CSS - a SubScene's fill is
+	 * not a styleable property, and the axes are 3D geometry wearing a
+	 * {@link PhongMaterial} rather than a stylesheet. So the SubScene is left
+	 * transparent and this pane's own background, which CSS does own, is what gets
+	 * painted; the axes then take their colour from that background. That keeps
+	 * style.css the one place the theme's colours are written down, and means this
+	 * follows the light/dark switch without having to be told about it.
+	 */
+	private void followBackground() {
+		backgroundProperty().addListener((obs, was, now) -> applyBackground(now));
+		applyBackground(getBackground());
+	}
+
+
+	private void applyBackground(Background background) {
+		setAxisColour(isLight(background) ? AXIS_ON_LIGHT : AXIS_ON_DARK);
+	}
+
+
+	/**
+	 * Whether a background is light enough that dark axes will read against it.
+	 * Anything that is not a plain colour - unset, or a gradient - is treated as
+	 * dark, which is what the view has always been.
+	 */
+	private static boolean isLight(Background background) {
+		if (background == null || background.getFills().isEmpty()) {
+			return false;
+		}
+		Paint fill = background.getFills().get(0).getFill();
+		return fill instanceof Color
+				&& ((Color) fill).getBrightness() > LIGHT_BACKGROUND_BRIGHTNESS;
+	}
+
+
+	/**
+	 * Recolours the axes in place. The materials are shared by the axis boxes and
+	 * their end spheres, so this repaints rather than rebuilding the group - the
+	 * background can change during a CSS pass, which is no time to be editing a
+	 * scene graph.
+	 *
+	 * @param colour - the colour to draw the axes and their labels in.
+	 */
+	private void setAxisColour(Color colour) {
+		if (axisGroup == null) {
+			return;
+		}
+		for (Node node : axisGroup.getChildren()) {
+			if (node instanceof Shape3D
+					&& ((Shape3D) node).getMaterial() instanceof PhongMaterial) {
+				PhongMaterial material = (PhongMaterial) ((Shape3D) node).getMaterial();
+				material.setDiffuseColor(colour);
+				material.setSpecularColor(colour);
+			}
+			else if (node instanceof Text) {
+				((Text) node).setFill(colour);
+			}
+		}
 	}
 
 
@@ -335,7 +415,8 @@ public class SensorPane3D  extends BorderPane {
 		subScene.heightProperty().bind(this.heightProperty());
 		//subScene.setDepthTest(DepthTest.ENABLE);
 
-		subScene.setFill(Color.BLACK);
+		// Transparent so this pane's CSS background is what shows behind the model.
+		subScene.setFill(Color.TRANSPARENT);
 		subScene.setCamera(camera);
 
 		//		//handle mouse events for sub scene

@@ -66,10 +66,19 @@
  *  there and can diverge freely.                                              *
  ******************************************************************************/
 
-/* Readouts drawn over the 3D view. That view is painted black in both styles,
-   so this text stays light whichever theme is in use. */
+/* The 3D view. Its SubScene is filled transparent so that this background shows
+   through, which is the only way CSS can reach it - a SubScene fill is not a
+   styleable property. SensorPane3D reads the colour back off this rule to pick a
+   contrasting colour for the axes, which are 3D geometry and so out of CSS's
+   reach entirely. */
+.sensor-3d {
+    -fx-background-color: white;
+}
+
+/* Readouts drawn over the 3D view, so they follow that view rather than the
+   surrounding pane. */
 .overlay-text .label {
-    -fx-text-fill: #eaf0f5;
+    -fx-text-fill: #35485e;
 }
 
 /*******************************************************************************
@@ -88,6 +97,14 @@
 /* #b3261e is unreadable on a dark background. */
 .dark .status.error {
     -fx-text-fill: #ff7a70;
+}
+
+.dark .sensor-3d {
+    -fx-background-color: black;
+}
+
+.dark .overlay-text .label {
+    -fx-text-fill: #eaf0f5;
 }
 
 /* Transit keeps accent_color at #0078d7 in both styles, which is heavy against
