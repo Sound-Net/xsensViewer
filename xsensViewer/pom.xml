@@ -2,14 +2,25 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jamdev</groupId>
 	<artifactId>xsensViewer</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>2.0.6</version>
 	<description>Views sensor data via serial from attached devices</description>
 
 	<properties>
+		<!-- The Java release this compiles to. Building at 25 needs a JDK 25 to
+		     run the build itself: from a terminal that means JAVA_HOME pointing
+		     at one, and in Eclipse it means adding JDK 25 under Preferences >
+		     Java > Installed JREs and selecting it for this project - m2e
+		     compiles with the JVM Eclipse is itself running on, and an older one
+		     stops with "release version 25 not supported". jpackage then bundles
+		     that same JDK as the app's runtime (see the win profile below), so
+		     nothing has to be installed on the machines this ships to. -->
+		<maven.compiler.release>25</maven.compiler.release>
+
 		<!-- Kept in step with the SoundNet Firmware Updater, so both applications
 		     render the Transit theme identically. Transit 2.0.0 is compiled for
-		     Java 17 and built against JavaFX 22. -->
-		<maven.compiler.release>17</maven.compiler.release>
+		     Java 17 and built against JavaFX 22. Those are the versions this
+		     builds *against* and are deliberately left behind the release level
+		     above - Java 25 reads Java 17 bytecode quite happily. -->
 		<javafx.version>22.0.2</javafx.version>
 		<transit.version>2.0.0</transit.version>
 		<controlsfx.version>11.2.1</controlsfx.version>
@@ -19,7 +30,7 @@
 		     separated by dots, so it rejects both the "-SNAPSHOT" suffix and a
 		     leading zero ("the first number in an app-version cannot be zero").
 		     Bump this when cutting a release. -->
-		<app.version>1.0.0</app.version>
+		<app.version>2.0.6</app.version>
 		<app.name>SoundNet Sensor Viewer</app.name>
 		<app.main.class>main.SensorMainLauncher</app.main.class>
 	</properties>
@@ -387,9 +398,15 @@
 				</configuration>
 			</plugin>
 			<plugin>
+				<!-- 3.14.1 rather than the 3.8.1 this used to pin: the older
+				     plugin does not know the newer -release values and rejects
+				     25 outright. -->
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
+				<version>3.14.1</version>
 				<configuration>
+					<!-- release alone is what matters; source/target are ignored
+					     when it is set, and are kept only so the three cannot
+					     drift apart if someone drops release again. -->
 					<source>${maven.compiler.release}</source>
 					<target>${maven.compiler.release}</target>
 					<release>${maven.compiler.release}</release>
@@ -400,10 +417,21 @@
 			</plugin>
 
 			<plugin>
+				<!-- There are no tests here, but Maven still runs Surefire, and
+				     the version it defaults to when none is given is 2.12.4 -
+				     old enough that it fails to start on a modern JDK rather
+				     than finding nothing to do. Pinned so the build does not
+				     depend on which default the running Maven happens to have. -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.5.4</version>
+			</plugin>
+
+			<plugin>
 				<!-- Build an executable JAR -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.1.0</version>
+				<version>3.5.0</version>
 				<configuration>
 					<archive>
 						<manifest>
@@ -419,7 +447,10 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.4.0</version>
+				<!-- Shade reads class files with ASM. 3.4.0's copy only knows
+				     class file versions up to Java 20, so it can refuse the
+				     Java 25 classes this now produces; 3.6.2 handles them. -->
+				<version>3.6.2</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -512,7 +543,8 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.3.0</version>
+				<!-- 3.3.0 predates JDK 25's javadoc and mis-drives it. -->
+				<version>3.12.0</version>
 				<configuration>
 					<!-- <source>8</source> <detectJavaApiLink>false</detectJavaApiLink> -->
 					<failOnError>false</failOnError>
